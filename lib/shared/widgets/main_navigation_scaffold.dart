@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-// import 'package:your_app_name/core/constants/asset_constants.dart';
-// import 'package:your_app_name/features/home/presentation/pages/home_page.dart';
-// import 'package:your_app_name/features/category/presentation/pages/category_page.dart';
-// import 'package:your_app_name/features/cart/presentation/pages/cart_page.dart';
-// import 'package:your_app_name/features/account/presentation/pages/account_page.dart';
+
+import '/features/cart/cartpage/cart.dart';
+import '/features/home/category/category_page.dart';
+import '/features/home/presentation/pages/home_page.dart';
 
 class MainNavigationScaffold extends StatefulWidget {
   const MainNavigationScaffold({super.key});
@@ -15,12 +14,29 @@ class MainNavigationScaffold extends StatefulWidget {
 class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
   int _selectedIndex = 0;
 
+  final FocusNode _searchFocusNode = FocusNode();
+
   final List<Widget> _screens = const [
-    // HomePage(),
-    // CategoryPage(),
-    // CartPage(),
+    // Replace with your actual page widgets
+    HomePage(),
+    CategoryPage(),
+    CartPage(),
     // AccountPage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(() {
+      setState(() {}); // Rebuild to update cursor visibility when focus changes
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -37,21 +53,32 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
         title: Row(
           children: [
             Image.asset('assets/img/logo.png', height: 40),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
+              child: SizedBox(
+                height: 36, // Reduced height here
                 child: TextField(
+                  focusNode: _searchFocusNode,
+                  showCursor: _searchFocusNode.hasFocus,
+                  autofocus: false,
                   decoration: InputDecoration(
-                    hintText: 'Search',
+                    hintText: 'Search Medicine...',
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    filled: true,
+                    fillColor: const Color(0xFFF5F5F5),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ),
@@ -61,24 +88,20 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
         centerTitle: false,
       ),
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
-  }
-
-  BottomNavigationBar _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-      backgroundColor: Colors.white,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.grey,
-      items: [
-        _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
-        _buildNavItem(icon: Icons.category, label: 'Category', index: 1),
-        _buildNavItem(icon: Icons.shopping_cart, label: 'Cart', index: 2),
-        _buildNavItem(icon: Icons.account_circle, label: 'Account', index: 3),
-      ],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.indigo,
+        unselectedItemColor: Colors.grey,
+        items: [
+          _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
+          _buildNavItem(icon: Icons.category, label: 'Category', index: 1),
+          _buildNavItem(icon: Icons.shopping_cart, label: 'Cart', index: 2),
+          _buildNavItem(icon: Icons.account_circle, label: 'Account', index: 3),
+        ],
+      ),
     );
   }
 
@@ -98,9 +121,9 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(8),
-                child: Icon(icon),
+                child: Icon(icon, size: 30),
               )
-              : Icon(icon),
+              : Icon(icon, size: 30),
       label: label,
     );
   }

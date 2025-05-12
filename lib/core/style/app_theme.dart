@@ -5,11 +5,13 @@ import 'text_styles.dart';
 class AppTheme {
   static ThemeData lightTheme(BuildContext context) {
     return ThemeData(
-      primarySwatch: Colors.blue,
-      scaffoldBackgroundColor: Colors.white,
+      primarySwatch: Colors.indigo,
+      scaffoldBackgroundColor: const Color(
+        0xFFF5F5F5,
+      ), // Set full app background
       appBarTheme: const AppBarTheme(
         color: Colors.white,
-        elevation: 0,
+        elevation: 1, // Add shadow to app bar
         iconTheme: IconThemeData(color: Colors.black),
         titleTextStyle: TextStyle(
           color: Colors.black,
@@ -19,9 +21,9 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: Colors.white, // Keep fields white for contrast
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -31,9 +33,11 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.indigo,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           textStyle: AppTextStyles.buttonText,
         ),
       ),
@@ -41,8 +45,9 @@ class AppTheme {
         style: TextButton.styleFrom(textStyle: AppTextStyles.linkText),
       ),
       cardTheme: CardTheme(
+        color: Colors.white, // Cards on #f5f5f5 background should be white
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: EdgeInsets.zero,
       ),
     );
@@ -50,7 +55,6 @@ class AppTheme {
 
   static ThemeData darkTheme(BuildContext context) {
     return ThemeData.dark().copyWith(
-      // Customize dark theme if needed
       appBarTheme: const AppBarTheme(elevation: 0),
     );
   }
