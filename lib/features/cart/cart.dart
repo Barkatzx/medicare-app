@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/features/cart/cart_provider.dart';
+import '/features/cart/checkout_page.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -27,14 +28,14 @@ class CartPage extends StatelessWidget {
                   '${cart.itemCount} items',
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.normal,
+                    fontWeight: FontWeight.bold,
                   ),
                 );
               },
             ),
           ],
         ),
-        backgroundColor: const Color(0xFFf5f5f5),
+        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body:
@@ -157,12 +158,12 @@ class CartPage extends StatelessWidget {
                     item.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 1),
                   Row(
                     children: [
                       if (hasDiscount) ...[
@@ -171,7 +172,7 @@ class CartPage extends StatelessWidget {
                           style: const TextStyle(
                             decoration: TextDecoration.lineThrough,
                             color: Colors.grey,
-                            fontSize: 14,
+                            fontSize: 12,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -180,7 +181,7 @@ class CartPage extends StatelessWidget {
                         '৳${item.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 14,
                         ),
                       ),
                       if (hasDiscount) ...[
@@ -304,25 +305,21 @@ class CartPage extends StatelessWidget {
               children: [
                 const Text(
                   'Subtotal:',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
                 const Spacer(),
                 Text(
                   '৳${cart.totalOriginalAmount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    decoration: TextDecoration.lineThrough,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 15, color: Colors.black),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             Row(
               children: [
                 const Text(
                   'Discount:',
-                  style: TextStyle(fontSize: 16, color: Colors.green),
+                  style: TextStyle(fontSize: 15, color: Colors.green),
                 ),
                 const Spacer(),
                 Text(
@@ -341,42 +338,40 @@ class CartPage extends StatelessWidget {
             children: [
               const Text(
                 'Total:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Text(
                 '৳${cart.totalAmount.toStringAsFixed(2)}',
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.indigo,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 5),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Proceeding to checkout'),
-                    duration: Duration(seconds: 1),
-                  ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CheckoutPage()),
                 );
               },
               child: const Text(
                 'Checkout',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '/features/cart/cartpage/cart.dart';
 import '/features/home/category/category_page.dart';
 import '/features/home/presentation/pages/home_page.dart';
+import '../../features/cart/cart.dart';
 
 class MainNavigationScaffold extends StatefulWidget {
   const MainNavigationScaffold({super.key});
