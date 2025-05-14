@@ -40,6 +40,12 @@ class CartItem {
 }
 
 class CartProvider with ChangeNotifier {
+  void clearCart() {
+    // Logic to clear the cart
+    _items.clear();
+    notifyListeners();
+  }
+
   final Map<String, CartItem> _items = {};
 
   Map<String, CartItem> get items => {..._items};

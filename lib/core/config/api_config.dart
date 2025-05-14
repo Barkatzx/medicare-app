@@ -4,6 +4,7 @@ class ApiConfig {
   static const String productsEndpoint = '$baseUrl/products';
   static const String ordersEndpoint = '$baseUrl/orders';
   static const String customersEndpoint = '$baseUrl/customers';
+  static const String authorization = 'https://medicareplc.com/wp-json/';
 
   // IMPORTANT: Avoid hardcoding secrets in version control.
   // Use dart-define, .env files, or other secure methods.

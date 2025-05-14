@@ -59,7 +59,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   bool _checkHasAddress(Map<String, dynamic> data) {
-    // Check both direct billing fields and nested billing object
     final billing = data['billing'] ?? data;
     return (billing['address_1'] != null &&
             billing['address_1'].toString().isNotEmpty) ||
@@ -68,16 +67,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _populateControllers(Map<String, dynamic> data) {
-    // Try to get billing data from nested object first
     final billing = data['billing'] ?? data;
 
     for (var key in _controllers.keys) {
       final field = key.replaceFirst('billing.', '');
       if (billing[field] != null) {
         _controllers[key]!.text = billing[field].toString();
-      }
-      // Fallback to direct fields (like billing_address_1)
-      else if (data[key] != null) {
+      } else if (data[key] != null) {
         _controllers[key]!.text = data[key].toString();
       }
     }
@@ -97,7 +93,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
             )
             .toList();
 
-    // Prepare billing data in WooCommerce format
     final billingData = {
       'first_name': _controllers['billing.first_name']!.text,
       'last_name': _controllers['billing.last_name']!.text,
@@ -125,10 +120,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
       );
 
       if (response.statusCode == 201) {
-        cart.clear();
+        final order = json.decode(response.body);
+        final orderId = order['id'];
+        final orderNumber = order['number'];
+        cart.clearCart();
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const OrderSuccessPage()),
+          MaterialPageRoute(
+            builder:
+                (_) => OrderSuccessPage(
+                  orderId: orderId,
+                  orderNumber: orderNumber,
+                ),
+          ),
         );
       } else {
         throw Exception('Failed to place order: ${response.body}');
@@ -222,12 +227,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _buildTextField(
               label: 'Pharmacy Name',
               controller: _controllers['billing.first_name']!,
+              hint: 'Your Pharmacy Name',
               isRequired: true,
             ),
             _buildTextField(
               label: 'Full Name',
               controller: _controllers['billing.last_name']!,
-              isRequired: true,
+              hint: 'Your Full Name',
             ),
             _buildTextField(
               label: 'Country',
@@ -238,17 +244,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _buildTextField(
               label: 'Address',
               controller: _controllers['billing.address_1']!,
+              hint: 'Your Address',
               isRequired: true,
             ),
             _buildTextField(
               label: 'Phone',
               controller: _controllers['billing.phone']!,
+              hint: 'Your Phone Number',
               keyboardType: TextInputType.phone,
               isRequired: true,
             ),
             _buildTextField(
               label: 'Email',
               controller: _controllers['billing.email']!,
+              hint: 'Your Email Address',
               keyboardType: TextInputType.emailAddress,
             ),
           ],
@@ -358,8 +367,39 @@ class _CheckoutPageState extends State<CheckoutPage> {
           Row(
             children: [
               const Text(
+                'Subtotal:',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const Spacer(),
+              Text(
+                '৳${cart.totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Row(
+            children: [
+              Text(
+                'Delivery:',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              Spacer(),
+              Text(
+                '৳0.00',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Row(
+            children: [
+              const Text(
                 'Total:',
-                style: TextStyle(fontSize: 20, color: Colors.black),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Text(
@@ -367,21 +407,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: Colors.indigo,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo,
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 0,
               ),
               onPressed: _placeOrder,
               child: const Text(

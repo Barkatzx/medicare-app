@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 
-class OrderSuccessPage extends StatelessWidget {
-  const OrderSuccessPage({super.key});
+class OrderSuccessPage extends StatefulWidget {
+  final int orderId;
+  final String orderNumber;
 
+  const OrderSuccessPage({
+    super.key,
+    required this.orderId,
+    required this.orderNumber,
+  });
+
+  @override
+  State<OrderSuccessPage> createState() => _OrderSuccessPageState();
+}
+
+class _OrderSuccessPageState extends State<OrderSuccessPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +55,7 @@ class OrderSuccessPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Animated checkmark circle
+                    // Success icon
                     Container(
                       width: 150,
                       height: 150,
@@ -117,84 +129,41 @@ class OrderSuccessPage extends StatelessWidget {
                           const SizedBox(height: 20),
                           const Divider(height: 1),
                           const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildInfoItem(
-                                Icons.access_time,
-                                '1 Day',
-                                'Delivery',
-                              ),
-                              _buildInfoItem(
-                                Icons.receipt,
-                                'INV-2025',
-                                'Order No.',
-                              ),
-                            ],
-                          ),
+                          _buildOrderInfo(),
                         ],
                       ),
                     ),
                     const SizedBox(height: 30),
 
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              // Navigate to order tracking
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              side: const BorderSide(color: Colors.indigo),
-                            ),
-                            child: const Text(
-                              'Track Order',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.indigo,
-                              ),
-                            ),
+                    // Home button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.popUntil(context, (route) => route.isFirst);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(
+                          Icons.home,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Back to Home',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.popUntil(
-                                context,
-                                (route) => route.isFirst,
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            icon: const Icon(
-                              Icons.home,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                            label: const Text(
-                              'Home',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -206,12 +175,31 @@ class OrderSuccessPage extends StatelessWidget {
     );
   }
 
+  Widget _buildOrderInfo() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildInfoItem(
+          Icons.receipt_long,
+          'INV-${widget.orderNumber}',
+          'Invoice',
+        ),
+        _buildInfoItem(
+          Icons.confirmation_number,
+          '#${widget.orderId}',
+          'Order ID',
+        ),
+        _buildInfoItem(Icons.local_shipping, '1 day', 'Delivery'),
+      ],
+    );
+  }
+
   Widget _buildInfoItem(IconData icon, String value, String label) {
     return Column(
       children: [
         Container(
-          width: 50,
-          height: 50,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             color: Colors.indigo.withOpacity(0.1),
             shape: BoxShape.circle,

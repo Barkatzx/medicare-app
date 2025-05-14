@@ -357,7 +357,7 @@ class CartPage extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -371,7 +371,7 @@ class CartPage extends StatelessWidget {
               child: const Text(
                 'Checkout',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),

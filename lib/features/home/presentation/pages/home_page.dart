@@ -1,14 +1,16 @@
+// lib/ui/screens/home_page.dart
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:medicare/features/cart/cart_provider.dart';
 import 'package:provider/provider.dart';
 
 import '/core/config/api_config.dart';
+import '/features/auth/provider/auth_provider.dart';
+import '/features/home/presentation/product_card.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -22,13 +24,12 @@ class _HomePageState extends State<HomePage> {
   String errorMessage = '';
   int page = 1;
   final int perPage = 16;
-
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    _fetchInitialProducts();
     _scrollController.addListener(_onScroll);
   }
 
@@ -44,328 +45,240 @@ class _HomePageState extends State<HomePage> {
         !isLoadingMore &&
         hasMore &&
         !isLoading) {
-      fetchMoreProducts();
+      _fetchMoreProducts();
     }
   }
 
-  Future<void> fetchProducts({bool refresh = false}) async {
-    if (refresh) {
+  Future<void> _fetchInitialProducts() async {
+    try {
       setState(() {
-        products = [];
-        page = 1;
-        hasMore = true;
+        isLoading = true;
         errorMessage = '';
       });
-    }
-    setState(() {
-      isLoading = true;
-      errorMessage = '';
-    });
-    try {
-      final credentials = base64Encode(
-        utf8.encode('${ApiConfig.consumerKey}:${ApiConfig.consumerSecret}'),
-      );
+
       final response = await http.get(
-        Uri.parse(
-          '${ApiConfig.productsEndpoint}?featured=true&per_page=$perPage&page=1',
-        ),
-        headers: {
-          'Authorization': 'Basic $credentials',
-          'Content-Type': 'application/json',
-        },
+        Uri.parse('${ApiConfig.productsEndpoint}?per_page=$perPage&page=1'),
+        headers: _getAuthHeaders(),
       );
-      if (response.statusCode == 200) {
-        final List<dynamic> allProducts = json.decode(response.body);
-        setState(() {
-          products = allProducts;
-          isLoading = false;
-          hasMore = allProducts.length == perPage;
-          page = 2;
-        });
-      } else {
-        setState(() {
-          errorMessage =
-              'Error: ${response.statusCode} - ${response.reasonPhrase}';
-          isLoading = false;
-        });
-      }
+
+      _handleProductResponse(response, initialLoad: true);
     } catch (e) {
+      _handleError(e.toString());
+    }
+  }
+
+  Future<void> _fetchMoreProducts() async {
+    if (!hasMore) return;
+
+    try {
+      setState(() => isLoadingMore = true);
+
+      final response = await http.get(
+        Uri.parse('${ApiConfig.productsEndpoint}?per_page=$perPage&page=$page'),
+        headers: _getAuthHeaders(),
+      );
+
+      _handleProductResponse(response);
+    } catch (e) {
+      _handleError(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() => isLoadingMore = false);
+      }
+    }
+  }
+
+  Map<String, String> _getAuthHeaders() {
+    final credentials = base64Encode(
+      utf8.encode('${ApiConfig.consumerKey}:${ApiConfig.consumerSecret}'),
+    );
+    return {
+      'Authorization': 'Basic $credentials',
+      'Content-Type': 'application/json',
+    };
+  }
+
+  void _handleProductResponse(
+    http.Response response, {
+    bool initialLoad = false,
+  }) {
+    if (response.statusCode == 200) {
+      final List<dynamic> newProducts = json.decode(response.body);
       setState(() {
-        errorMessage = 'Failed to load products: $e';
+        if (initialLoad) {
+          products = newProducts;
+        } else {
+          products.addAll(newProducts);
+        }
+        hasMore = newProducts.length == perPage;
+        page++;
         isLoading = false;
+      });
+    } else {
+      _handleError('Error: ${response.statusCode} - ${response.reasonPhrase}');
+    }
+  }
+
+  void _handleError(String message) {
+    if (mounted) {
+      setState(() {
+        errorMessage = message;
+        isLoading = false;
+        isLoadingMore = false;
       });
     }
   }
 
-  Future<void> fetchMoreProducts() async {
-    if (!hasMore) return;
+  Future<void> _refreshProducts() async {
     setState(() {
-      isLoadingMore = true;
+      products = [];
+      page = 1;
+      hasMore = true;
     });
-    try {
-      final credentials = base64Encode(
-        utf8.encode('${ApiConfig.consumerKey}:${ApiConfig.consumerSecret}'),
-      );
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConfig.productsEndpoint}?featured=true&per_page=$perPage&page=$page',
-        ),
-        headers: {
-          'Authorization': 'Basic $credentials',
-          'Content-Type': 'application/json',
-        },
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> moreProducts = json.decode(response.body);
-        setState(() {
-          products.addAll(moreProducts);
-          isLoadingMore = false;
-          hasMore = moreProducts.length == perPage;
-          page++;
-        });
-      } else {
-        setState(() {
-          isLoadingMore = false;
-          hasMore = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        isLoadingMore = false;
-        hasMore = false;
-      });
-    }
+    await _fetchInitialProducts();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: FutureBuilder(
+          future: authProvider.getUserDisplayName(),
+          builder: (context, snapshot) {
+            return Text(
+              snapshot.hasData ? 'Welcome, ${snapshot.data}' : 'Welcome',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onPrimary,
+              ),
+            );
+          },
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: theme.colorScheme.onPrimary),
+            onPressed: () => _logout(context, authProvider),
+          ),
+        ],
+        backgroundColor: theme.colorScheme.primary,
+        elevation: 0,
+      ),
+      body: _buildProductGrid(theme),
+    );
+  }
+
+  Widget _buildProductGrid(ThemeData theme) {
     if (isLoading && products.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
+
     if (errorMessage.isNotEmpty) {
-      return Center(child: Text(errorMessage));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                errorMessage,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _fetchInitialProducts,
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      );
     }
+
     return RefreshIndicator(
-      onRefresh: () => fetchProducts(refresh: true),
+      color: theme.colorScheme.primary,
+      onRefresh: _refreshProducts,
       child: CustomScrollView(
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Text(
-                'Most Discounted Product',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 24, bottom: 16),
+            sliver: SliverToBoxAdapter(
+              child: Center(
+                child: Text(
+                  'Featured Products',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ),
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverGrid(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => ProductCard(product: products[index]),
+                (context, index) =>
+                    ProductCard(product: products[index], theme: theme),
                 childCount: products.length,
               ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.7,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
               ),
             ),
           ),
-          // Loading indicator at the bottom
           if (isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+          if (!hasMore && products.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: CircularProgressIndicator()),
+                padding: const EdgeInsets.only(bottom: 24, top: 16),
+                child: Center(
+                  child: Text(
+                    'You\'ve reached the end',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ),
               ),
             ),
         ],
       ),
     );
   }
-}
 
-class ProductCard extends StatelessWidget {
-  final Map<String, dynamic> product;
-
-  const ProductCard({super.key, required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    final imageUrl =
-        product['images'] != null &&
-                product['images'].isNotEmpty &&
-                product['images'][0]['src'] != null
-            ? product['images'][0]['src']
-            : '';
-    final title = product['name'] ?? 'No Name';
-
-    final sellingPrice =
-        double.tryParse(product['price']?.toString() ?? '0') ?? 0;
-
-    final regularPriceStr = product['regular_price']?.toString() ?? '';
-    final double? regularPriceVal =
-        regularPriceStr.isNotEmpty ? double.tryParse(regularPriceStr) : null;
-
-    double discountPercent = 0;
-    if (regularPriceVal != null && regularPriceVal > sellingPrice) {
-      discountPercent =
-          ((regularPriceVal - sellingPrice) / regularPriceVal) * 100;
+  Future<void> _logout(BuildContext context, AuthProvider authProvider) async {
+    await authProvider.logout();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
     }
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {
-          // TODO: Navigate to product detail if needed
-        },
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(10),
-                    ),
-                    child:
-                        imageUrl.isNotEmpty
-                            ? Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder:
-                                  (context, error, stackTrace) => Container(
-                                    color: Colors.grey[200],
-                                    child: const Icon(Icons.broken_image),
-                                  ),
-                            )
-                            : Container(
-                              color: Colors.grey[200],
-                              child: const Center(child: Icon(Icons.image)),
-                            ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 6.0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (regularPriceVal != null &&
-                              regularPriceVal > sellingPrice)
-                            Text(
-                              '৳${regularPriceVal.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: Colors.grey,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                          if (regularPriceVal != null &&
-                              regularPriceVal > sellingPrice)
-                            const SizedBox(width: 6),
-                          Text(
-                            '৳${sellingPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        height: 40,
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            textStyle: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onPressed: () {
-                            Provider.of<CartProvider>(
-                              context,
-                              listen: false,
-                            ).addItem(
-                              productId: product['id'].toString(),
-                              name: title,
-                              imageUrl: imageUrl,
-                              price: sellingPrice,
-                              regularPrice: regularPriceVal,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Added "$title" to cart')),
-                            );
-                          },
-                          child: const Text('Add Cart'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (discountPercent > 0)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red[400],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${discountPercent.toStringAsFixed(0)}% OFF',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }
