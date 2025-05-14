@@ -283,7 +283,7 @@ class ProductCard extends StatelessWidget {
                               '৳${regularPriceVal.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 12,
                                 color: Colors.grey,
                                 decoration: TextDecoration.lineThrough,
                               ),
@@ -295,8 +295,7 @@ class ProductCard extends StatelessWidget {
                             '৳${sellingPrice.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: Theme.of(context).primaryColor,
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -351,7 +350,7 @@ class ProductCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.indigo,
+                    color: Colors.red[400],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
