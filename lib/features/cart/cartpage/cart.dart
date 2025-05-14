@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/features/cart/cart_provider.dart'; // adjust path
+import '/features/cart/cart_provider.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -14,13 +14,28 @@ class CartPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFf5f5f5),
       appBar: AppBar(
-        title: const Text(
-          'Your Cart',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'My Cart',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+            ),
+            Consumer<CartProvider>(
+              builder: (context, cart, child) {
+                return Text(
+                  '${cart.itemCount} items',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                  ),
+                );
+              },
+            ),
+          ],
         ),
-        backgroundColor: Colors.indigo,
+        backgroundColor: const Color(0xFFf5f5f5),
         elevation: 0,
-        centerTitle: true,
       ),
       body:
           items.isEmpty
@@ -38,7 +53,7 @@ class CartPage extends StatelessWidget {
                           ),
                       itemBuilder: (ctx, i) {
                         final item = items[i];
-                        return _buildCartItem(item, cart);
+                        return _buildCartItem(item, cart, context);
                       },
                     ),
                   ),
@@ -73,15 +88,20 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCartItem(CartItem item, CartProvider cart) {
+  Widget _buildCartItem(
+    CartItem item,
+    CartProvider cart,
+    BuildContext context,
+  ) {
+    // Simplify discount calculation logic
     final bool hasDiscount =
         item.regularPrice != null && item.regularPrice! > item.price;
+    final double amountSaved =
+        hasDiscount ? (item.regularPrice! - item.price) * item.quantity : 0;
     final double discountPercent =
         hasDiscount
             ? ((item.regularPrice! - item.price) / item.regularPrice!) * 100
             : 0;
-    final double amountSaved =
-        hasDiscount ? (item.regularPrice! - item.price) * item.quantity : 0;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -90,15 +110,14 @@ class CartPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
+            color: Colors.black.withOpacity(0.00),
+            blurRadius: 0,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          // Image with margin and rounded border
           Container(
             margin: const EdgeInsets.all(2),
             width: 100,
@@ -128,7 +147,6 @@ class CartPage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Product details
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -147,24 +165,25 @@ class CartPage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
+                      if (hasDiscount) ...[
+                        Text(
+                          '৳${item.regularPrice!.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
                       Text(
                         '৳${item.price.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          color: Colors.indigo,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       if (hasDiscount) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          '৳${item.regularPrice!.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -172,30 +191,33 @@ class CartPage extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade100,
-                            borderRadius: BorderRadius.circular(6),
+                            color: Colors.red[400],
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             '-${discountPercent.toStringAsFixed(0)}%',
                             style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                               fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Saved ৳${amountSaved.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
                           ),
                         ),
                       ],
                     ],
                   ),
+                  if (hasDiscount)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'You save ৳${amountSaved.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -260,6 +282,8 @@ class CartPage extends StatelessWidget {
   }
 
   Widget _buildTotalSection(BuildContext context, CartProvider cart) {
+    final hasSavings = cart.totalSaved > 0;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -267,7 +291,7 @@ class CartPage extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -275,36 +299,43 @@ class CartPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              const Text(
-                'Subtotal:',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const Spacer(),
-              Text(
-                '৳${cart.totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          if (hasSavings) ...[
+            Row(
+              children: [
+                const Text(
+                  'Subtotal:',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text(
-                'Delivery:',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const Spacer(),
-              const Text(
-                '৳0.00',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
+                const Spacer(),
+                Text(
+                  '৳${cart.totalOriginalAmount.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Text(
+                  'Discount:',
+                  style: TextStyle(fontSize: 16, color: Colors.green),
+                ),
+                const Spacer(),
+                Text(
+                  '-৳${cart.totalSaved.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ],
           const Divider(height: 24),
           Row(
             children: [
@@ -344,7 +375,11 @@ class CartPage extends StatelessWidget {
               },
               child: const Text(
                 'Checkout',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

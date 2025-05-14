@@ -208,16 +208,15 @@ class ProductCard extends StatelessWidget {
 
     final sellingPrice =
         double.tryParse(product['price']?.toString() ?? '0') ?? 0;
-    final regularPrice = product['regular_price']?.toString() ?? '';
+
+    final regularPriceStr = product['regular_price']?.toString() ?? '';
+    final double? regularPriceVal =
+        regularPriceStr.isNotEmpty ? double.tryParse(regularPriceStr) : null;
 
     double discountPercent = 0;
-    if (regularPrice.isNotEmpty) {
-      try {
-        final double regPrice = double.parse(regularPrice);
-        if (regPrice > sellingPrice) {
-          discountPercent = ((regPrice - sellingPrice) / regPrice) * 100;
-        }
-      } catch (_) {}
+    if (regularPriceVal != null && regularPriceVal > sellingPrice) {
+      discountPercent =
+          ((regularPriceVal - sellingPrice) / regularPriceVal) * 100;
     }
 
     return Card(
@@ -226,7 +225,7 @@ class ProductCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () {
-          /*/ TODO: Navigate to product detail if needed*/
+          // TODO: Navigate to product detail if needed
         },
         child: Stack(
           children: [
@@ -278,10 +277,10 @@ class ProductCard extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (regularPrice.isNotEmpty &&
-                              regularPrice != sellingPrice.toString())
+                          if (regularPriceVal != null &&
+                              regularPriceVal > sellingPrice)
                             Text(
-                              '৳$regularPrice.00',
+                              '৳${regularPriceVal.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
@@ -289,8 +288,8 @@ class ProductCard extends StatelessWidget {
                                 decoration: TextDecoration.lineThrough,
                               ),
                             ),
-                          if (regularPrice.isNotEmpty &&
-                              regularPrice != sellingPrice.toString())
+                          if (regularPriceVal != null &&
+                              regularPriceVal > sellingPrice)
                             const SizedBox(width: 6),
                           Text(
                             '৳${sellingPrice.toStringAsFixed(2)}',
@@ -328,6 +327,7 @@ class ProductCard extends StatelessWidget {
                               name: title,
                               imageUrl: imageUrl,
                               price: sellingPrice,
+                              regularPrice: regularPriceVal,
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Added "$title" to cart')),
