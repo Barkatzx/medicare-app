@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '/features/home/category/category_page.dart';
 import '/features/home/presentation/pages/home_page.dart';
 import '../../features/cart/cart.dart';
+import '../../features/cart/cart_provider.dart';
 
 class MainNavigationScaffold extends StatefulWidget {
   const MainNavigationScaffold({super.key});
@@ -13,11 +15,8 @@ class MainNavigationScaffold extends StatefulWidget {
 
 class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
   int _selectedIndex = 0;
-
   final FocusNode _searchFocusNode = FocusNode();
-
   final List<Widget> _screens = const [
-    // Replace with your actual page widgets
     HomePage(),
     CategoryPage(),
     CartPage(),
@@ -28,7 +27,7 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
   void initState() {
     super.initState();
     _searchFocusNode.addListener(() {
-      setState(() {}); // Rebuild to update cursor visibility when focus changes
+      setState(() {});
     });
   }
 
@@ -56,7 +55,7 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
             const SizedBox(width: 10),
             Expanded(
               child: SizedBox(
-                height: 36, // Reduced height here
+                height: 36,
                 child: TextField(
                   focusNode: _searchFocusNode,
                   showCursor: _searchFocusNode.hasFocus,
@@ -71,14 +70,6 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
                   ),
                 ),
               ),
@@ -88,19 +79,32 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
         centerTitle: false,
       ),
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.indigo,
-        unselectedItemColor: Colors.grey,
-        items: [
-          _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
-          _buildNavItem(icon: Icons.category, label: 'Category', index: 1),
-          _buildNavItem(icon: Icons.shopping_cart, label: 'Cart', index: 2),
-          _buildNavItem(icon: Icons.account_circle, label: 'Account', index: 3),
-        ],
+      bottomNavigationBar: Consumer<CartProvider>(
+        builder: (context, cart, child) {
+          return BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Colors.indigo,
+            unselectedItemColor: Colors.grey,
+            items: [
+              _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
+              _buildNavItem(icon: Icons.category, label: 'Category', index: 1),
+              _buildNavItem(
+                icon: Icons.shopping_cart,
+                label: 'Cart',
+                index: 2,
+                badgeCount: cart.items.length,
+              ),
+              _buildNavItem(
+                icon: Icons.account_circle,
+                label: 'Account',
+                index: 3,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -109,11 +113,14 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
     required IconData icon,
     required String label,
     required int index,
+    int badgeCount = 0,
   }) {
     final bool isSelected = _selectedIndex == index;
 
     return BottomNavigationBarItem(
-      icon:
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
           isSelected
               ? Container(
                 decoration: BoxDecoration(
@@ -124,6 +131,30 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
                 child: Icon(icon, size: 30),
               )
               : Icon(icon, size: 30),
+          if (badgeCount > 0 && label == 'Cart')
+            Positioned(
+              right: -5,
+              top: -5,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                child: Text(
+                  badgeCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      ),
       label: label,
     );
   }
