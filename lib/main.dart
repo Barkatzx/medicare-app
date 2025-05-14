@@ -7,6 +7,7 @@ import '/features/auth/pages/login_page.dart';
 import '/features/auth/provider/auth_provider.dart';
 import '/features/auth/provider/auth_wrapper.dart';
 import '/features/cart/cart_provider.dart';
+import '/features/myaccount/account_provider.dart';
 import '/shared/widgets/main_navigation_scaffold.dart';
 
 void main() async {
@@ -20,6 +21,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => AccountProvider()),
       ],
       child: const MyApp(),
     ),

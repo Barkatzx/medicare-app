@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '/features/home/category/category_page.dart';
 import '/features/home/presentation/pages/home_page.dart';
+import '/features/myaccount/account_page.dart';
 import '../../features/cart/cart.dart';
 import '../../features/cart/cart_provider.dart';
 
@@ -20,7 +21,7 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
     HomePage(),
     CategoryPage(),
     CartPage(),
-    // AccountPage(),
+    AccountPage(),
   ];
 
   @override
