@@ -53,8 +53,8 @@ class _LoginScreenState extends State<LoginScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.8),
-              theme.colorScheme.secondary.withOpacity(0.9),
+              Colors.indigo.withOpacity(0.8),
+              Colors.indigo.withOpacity(0.9),
             ],
           ),
         ),
@@ -66,16 +66,17 @@ class _LoginScreenState extends State<LoginScreen>
               child: Stack(
                 children: [
                   Positioned(
-                    top: 100,
+                    top: 80,
                     left: 0,
                     right: 0,
                     child: Center(
                       child: Hero(
                         tag: 'app-logo',
-                        child: Icon(
-                          Icons.medical_services,
-                          size: 100,
-                          color: Colors.white,
+                        child: Image.asset(
+                          'assets/img/logo.png',
+                          height: 150,
+                          width: 250,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
@@ -125,20 +126,20 @@ class _LoginScreenState extends State<LoginScreen>
                             TextFormField(
                               controller: _usernameController,
                               decoration: InputDecoration(
-                                labelText: 'Username',
+                                labelText: 'Email or Phone number',
                                 prefixIcon: Icon(
-                                  Icons.person,
-                                  color: theme.colorScheme.primary,
+                                  Icons.phone_android,
+                                  color: Colors.indigo,
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 filled: true,
-                                fillColor: theme.colorScheme.surface,
+                                fillColor: Colors.white,
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter your username';
+                                  return 'Please enter your phone number or email';
                                 }
                                 return null;
                               },
@@ -151,14 +152,14 @@ class _LoginScreenState extends State<LoginScreen>
                                 labelText: 'Password',
                                 prefixIcon: Icon(
                                   Icons.lock,
-                                  color: theme.colorScheme.primary,
+                                  color: Colors.indigo,
                                 ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword
                                         ? Icons.visibility
                                         : Icons.visibility_off,
-                                    color: theme.colorScheme.primary,
+                                    color: Colors.indigo,
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -170,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 filled: true,
-                                fillColor: theme.colorScheme.surface,
+                                fillColor: Colors.white,
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -182,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 5),
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
@@ -192,18 +193,20 @@ class _LoginScreenState extends State<LoginScreen>
                                 child: Text(
                                   'Forgot Password?',
                                   style: TextStyle(
-                                    color: theme.colorScheme.primary,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 10),
                             if (authProvider.errorMessage != null)
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.errorContainer,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   children: [
@@ -243,6 +246,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                 );
                                             if (success && mounted) {
                                               Navigator.pushReplacementNamed(
+                                                // ignore: use_build_context_synchronously
                                                 context,
                                                 '/home',
                                               );
@@ -250,12 +254,12 @@ class _LoginScreenState extends State<LoginScreen>
                                           }
                                         },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
+                                  backgroundColor: Colors.indigo,
                                   foregroundColor: theme.colorScheme.onPrimary,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  elevation: 4,
+                                  elevation: 0,
                                 ),
                                 child:
                                     authProvider.isLoading
@@ -263,8 +267,8 @@ class _LoginScreenState extends State<LoginScreen>
                                           width: 24,
                                           height: 24,
                                           child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 3,
+                                            color: Colors.indigo,
+                                            strokeWidth: 5,
                                           ),
                                         )
                                         : const Text(
@@ -289,10 +293,11 @@ class _LoginScreenState extends State<LoginScreen>
                                     // Navigate to sign up screen
                                   },
                                   child: Text(
-                                    'Sign Up',
+                                    'Create Account',
                                     style: TextStyle(
-                                      color: theme.colorScheme.primary,
+                                      color: Colors.indigo,
                                       fontWeight: FontWeight.bold,
+                                      fontSize: 16,
                                     ),
                                   ),
                                 ),

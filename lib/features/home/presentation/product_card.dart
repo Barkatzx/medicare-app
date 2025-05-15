@@ -6,9 +6,8 @@ import '/features/cart/cart_provider.dart';
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
-  final ThemeData theme;
 
-  const ProductCard({super.key, required this.product, required this.theme});
+  const ProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -22,60 +21,72 @@ class ProductCard extends StatelessWidget {
     final discountPercent = _calculateDiscount(regularPrice, sellingPrice);
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => _showProductDetails(context),
-        child: Stack(
-          children: [
-            // Product Image
-            _buildProductImage(imageUrl),
-
-            // Product Details
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: _buildProductDetails(
-                context,
-                title,
-                regularPrice,
-                sellingPrice,
-                discountPercent,
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Product Image with border radius
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(10),
+                ),
+                child: _buildProductImage(imageUrl),
               ),
-            ),
 
-            // Discount Badge
-            if (discountPercent > 0) _buildDiscountBadge(discountPercent),
+              // Product Details
+              Padding(
+                padding: const EdgeInsets.all(5),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Title
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
 
-            // Favorite Button
-            Positioned(top: 8, left: 8, child: _buildFavoriteButton()),
-          ],
-        ),
+                    // Prices in same line
+                    _buildPriceDisplay(regularPrice, sellingPrice),
+                    const SizedBox(height: 5),
+
+                    // Add to Cart Button
+                    _buildAddToCartButton(context),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Discount Badge at top right
+          if (discountPercent > 0) _buildDiscountBadge(discountPercent),
+        ],
       ),
     );
   }
 
   Widget _buildProductImage(String imageUrl) {
     return Container(
-      height: 160,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            theme.colorScheme.surface.withOpacity(0.8),
-            theme.colorScheme.surfaceVariant.withOpacity(0.6),
-          ],
-        ),
-      ),
+      height: 120,
+      color: const Color(0xFFF5F5F5), // #f5f5f5 background
       child:
           imageUrl.isNotEmpty
               ? Image.network(
                 imageUrl,
                 fit: BoxFit.cover,
+
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Center(
@@ -88,76 +99,36 @@ class ProductCard extends StatelessWidget {
                     ),
                   );
                 },
+
                 errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
               )
               : _buildPlaceholderImage(),
     );
   }
 
-  Widget _buildProductDetails(
-    BuildContext context,
-    String title,
-    double? regularPrice,
-    double sellingPrice,
-    int discountPercent,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withOpacity(0.0),
-            Colors.black.withOpacity(0.8),
-          ],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildPriceDisplay(regularPrice, sellingPrice),
-              _buildAddToCartButton(context),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPriceDisplay(double? regularPrice, double sellingPrice) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (regularPrice != null && regularPrice > sellingPrice)
-          Text(
-            '৳${regularPrice.toStringAsFixed(2)}',
-            style: const TextStyle(
-              decoration: TextDecoration.lineThrough,
-              color: Colors.white70,
-              fontSize: 12,
+          Padding(
+            padding: const EdgeInsets.only(right: 5),
+            child: Text(
+              '৳${regularPrice.toStringAsFixed(2)}',
+              style: TextStyle(
+                decoration: TextDecoration.lineThrough,
+                color: Colors.grey.shade600,
+                fontSize: 13,
+              ),
             ),
           ),
         Text(
           '৳${sellingPrice.toStringAsFixed(2)}',
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
+            color: Colors.indigo,
           ),
         ),
       ],
@@ -165,27 +136,23 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildAddToCartButton(BuildContext context) {
-    return Material(
-      borderRadius: BorderRadius.circular(12),
-      color: theme.colorScheme.primary,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _addToCart(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add_shopping_cart, size: 18, color: Colors.white),
-              SizedBox(width: 4),
-              Text(
-                'Add',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () => _addToCart(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.indigo,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        child: const Text(
+          'Add to Cart',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
           ),
         ),
       ),
@@ -197,23 +164,16 @@ class ProductCard extends StatelessWidget {
       top: 8,
       right: 8,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.redAccent,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: Colors.red[800],
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
-          '$discountPercent% OFF',
+          '- $discountPercent% ',
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -221,27 +181,8 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoriteButton() {
-    return CircleAvatar(
-      backgroundColor: Colors.white.withOpacity(0.9),
-      radius: 18,
-      child: IconButton(
-        icon: const Icon(Icons.favorite_border, size: 18),
-        color: Colors.black,
-        onPressed: () {}, // TODO: Implement favorite functionality
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
   Widget _buildPlaceholderImage() {
-    return Center(
-      child: Icon(
-        Icons.photo_library_outlined,
-        size: 48,
-        color: theme.colorScheme.onSurface.withOpacity(0.3),
-      ),
-    );
+    return Center(child: Icon(Icons.photo_library_outlined, size: 50));
   }
 
   int _calculateDiscount(double? regularPrice, double sellingPrice) {
@@ -262,19 +203,13 @@ class ProductCard extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Added ${product['name']} to cart'),
+        content: Text('Added ${product['name']} to your cart'),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        backgroundColor: Colors.green,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       ),
     );
-  }
-
-  void _showProductDetails(BuildContext context) {
-    // TODO: Implement product details navigation
-    // Navigator.push(context, MaterialPageRoute(
-    //   builder: (context) => ProductDetailsScreen(product: product),
-    // ));
   }
 }

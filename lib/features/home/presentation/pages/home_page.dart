@@ -237,8 +237,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverGrid(
               delegate: SliverChildBuilderDelegate(
-                (context, index) =>
-                    ProductCard(product: products[index], theme: theme),
+                (context, index) => ProductCard(product: products[index]),
                 childCount: products.length,
               ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
