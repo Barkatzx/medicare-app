@@ -81,6 +81,10 @@ class _AccountPageState extends State<AccountPage> {
             _buildProfileHeader(context, user, theme),
             const SizedBox(height: 24),
             _buildAccountDetailsCard(user, theme),
+            if (user.billingDetails != null) ...[
+              const SizedBox(height: 24),
+              _buildBillingDetailsCard(user.billingDetails!, theme),
+            ],
             const SizedBox(height: 24),
             _buildActionButtons(context, theme),
           ],
@@ -201,16 +205,16 @@ class _AccountPageState extends State<AccountPage> {
             ),
             const Divider(height: 24),
             _buildDetailRow(
-              icon: Icons.person,
-              label: 'Username',
-              value: user.username,
+              icon: Icons.email,
+              label: 'Email',
+              value: user.email,
               theme: theme,
             ),
             const Divider(height: 24),
             _buildDetailRow(
-              icon: Icons.email,
-              label: 'Email',
-              value: user.email,
+              icon: Icons.location_on,
+              label: 'Address',
+              value: user.billingDetails?.address1 ?? 'Not provided',
               theme: theme,
             ),
           ],
@@ -293,6 +297,58 @@ class _AccountPageState extends State<AccountPage> {
           ),
         ),
       ],
+    );
+  }
+
+  //Billing Details
+  Widget _buildBillingDetailsCard(BillingDetails billing, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Billing Address', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              icon: Icons.person,
+              label: 'Name',
+              value: '${billing.firstName} ${billing.lastName}',
+              theme: theme,
+            ),
+            const Divider(height: 24),
+            _buildDetailRow(
+              icon: Icons.location_on,
+              label: 'Address',
+              value: billing.address1,
+              theme: theme,
+            ),
+            const Divider(height: 24),
+            _buildDetailRow(
+              icon: Icons.flag,
+              label: 'Country',
+              value: billing.country,
+              theme: theme,
+            ),
+            const Divider(height: 24),
+            _buildDetailRow(
+              icon: Icons.phone,
+              label: 'Phone',
+              value: billing.phone,
+              theme: theme,
+            ),
+            const Divider(height: 24),
+            _buildDetailRow(
+              icon: Icons.email,
+              label: 'Email',
+              value: billing.email,
+              theme: theme,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

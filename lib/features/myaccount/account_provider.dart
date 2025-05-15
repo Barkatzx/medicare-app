@@ -26,6 +26,8 @@ class AccountProvider with ChangeNotifier {
       // Get basic user info from AuthService
       final email = await authProvider.getUserEmail();
       final displayName = await authProvider.getUserDisplayName();
+      final phone = await authProvider.getUserPhone();
+      final avatarUrl = await authProvider.getUserAvatarUrl();
 
       if (email == null) {
         throw Exception('User email not found');
@@ -36,8 +38,8 @@ class AccountProvider with ChangeNotifier {
         id: 0, // Will be updated from API
         name: displayName ?? 'User',
         email: email,
-        phone: null,
-        avatarUrl: null,
+        phone: phone,
+        avatarUrl: avatarUrl,
         username: email.split('@').first,
       );
 

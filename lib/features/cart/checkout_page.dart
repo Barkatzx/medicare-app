@@ -44,37 +44,46 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        setState(() {
-          _hasAddress = _checkHasAddress(data);
-          _populateControllers(data);
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _hasAddress = _checkHasAddress(data);
+            _populateControllers(data);
+            _isLoading = false;
+          });
+        }
       } else {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        debugPrint('Failed to fetch customer data: ${response.statusCode}');
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
       debugPrint('Error fetching customer data: $e');
     }
   }
 
   bool _checkHasAddress(Map<String, dynamic> data) {
-    final billing = data['billing'] ?? data;
-    return (billing['address_1'] != null &&
-            billing['address_1'].toString().isNotEmpty) ||
-        (data['billing_address_1'] != null &&
-            data['billing_address_1'].toString().isNotEmpty);
+    final billing = data['billing'] ?? {};
+    return billing['address_1'] != null &&
+        billing['address_1'].toString().isNotEmpty &&
+        billing['first_name'] != null &&
+        billing['first_name'].toString().isNotEmpty &&
+        billing['phone'] != null &&
+        billing['phone'].toString().isNotEmpty;
   }
 
   void _populateControllers(Map<String, dynamic> data) {
-    final billing = data['billing'] ?? data;
+    final billing = data['billing'] ?? {};
 
     for (var key in _controllers.keys) {
       final field = key.replaceFirst('billing.', '');
-      if (billing[field] != null) {
+      if (billing[field] != null && billing[field].toString().isNotEmpty) {
         _controllers[key]!.text = billing[field].toString();
-      } else if (data[key] != null) {
-        _controllers[key]!.text = data[key].toString();
+      } else if (data[field] != null && data[field].toString().isNotEmpty) {
+        _controllers[key]!.text = data[field].toString();
       }
     }
   }
@@ -125,23 +134,27 @@ class _CheckoutPageState extends State<CheckoutPage> {
         final orderNumber = order['number'];
         cart.clearCart();
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (_) => OrderSuccessPage(
-                  orderId: orderId,
-                  orderNumber: orderNumber,
-                ),
-          ),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (_) => OrderSuccessPage(
+                    orderId: orderId,
+                    orderNumber: orderNumber,
+                  ),
+            ),
+          );
+        }
       } else {
         throw Exception('Failed to place order: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error placing order: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error placing order: $e')));
+      }
     }
   }
 
@@ -185,17 +198,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Billing Section
                   _buildBillingSection(),
                   const SizedBox(height: 16),
-                  // Order Summary
                   _buildOrderSummary(cart),
                 ],
               ),
             ),
           ),
         ),
-        // Footer with totals and button
         _buildCheckoutFooter(cart),
       ],
     );
@@ -260,6 +270,44 @@ class _CheckoutPageState extends State<CheckoutPage> {
               hint: 'Your Email Address',
               keyboardType: TextInputType.emailAddress,
             ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressPreview() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFf5f5f5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_controllers['billing.first_name']!.text.isNotEmpty ||
+              _controllers['billing.last_name']!.text.isNotEmpty)
+            Text(
+              '${_controllers['billing.first_name']!.text} ${_controllers['billing.last_name']!.text}'
+                  .trim(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          if (_controllers['billing.address_1']!.text.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(_controllers['billing.address_1']!.text),
+          ],
+          if (_controllers['billing.country']!.text.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(_controllers['billing.country']!.text),
+          ],
+          if (_controllers['billing.phone']!.text.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text('Phone: ${_controllers['billing.phone']!.text}'),
+          ],
+          if (_controllers['billing.email']!.text.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text('Email: ${_controllers['billing.email']!.text}'),
           ],
         ],
       ),
@@ -435,35 +483,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddressPreview() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFf5f5f5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${_controllers['billing.first_name']!.text} ${_controllers['billing.last_name']!.text}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(_controllers['billing.address_1']!.text),
-          const SizedBox(height: 4),
-          Text(_controllers['billing.country']!.text),
-          const SizedBox(height: 4),
-          Text('Phone: ${_controllers['billing.phone']!.text}'),
-          if (_controllers['billing.email']!.text.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text('Email: ${_controllers['billing.email']!.text}'),
-          ],
         ],
       ),
     );

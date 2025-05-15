@@ -162,6 +162,14 @@ class AuthService {
     return await _storage.read(key: 'user_email');
   }
 
+  Future<String?> getUserPhone() async {
+    return await _storage.read(key: 'user_phone');
+  }
+
+  Future<String?> getUserAvatarUrl() async {
+    return await _storage.read(key: 'user_avatarUrl');
+  }
+
   Future<String?> getUserDisplayName() async {
     return await _storage.read(key: 'user_display_name');
   }

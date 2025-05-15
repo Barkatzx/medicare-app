@@ -1,4 +1,39 @@
-// lib/features/myaccount/user_model.dart
+class BillingDetails {
+  final String firstName;
+  final String lastName;
+  final String country;
+  final String address1;
+  final String phone;
+  final String email;
+
+  BillingDetails({
+    required this.firstName,
+    required this.lastName,
+    required this.country,
+    required this.address1,
+    required this.phone,
+    required this.email,
+  });
+
+  BillingDetails copyWith({
+    String? firstName,
+    String? lastName,
+    String? country,
+    String? address1,
+    String? phone,
+    String? email,
+  }) {
+    return BillingDetails(
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      country: country ?? this.country,
+      address1: address1 ?? this.address1,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+    );
+  }
+}
+
 class UserModel {
   final int id;
   final String name;
@@ -6,6 +41,7 @@ class UserModel {
   final String? phone;
   final String? avatarUrl;
   final String username;
+  final BillingDetails? billingDetails;
 
   UserModel({
     required this.id,
@@ -14,6 +50,7 @@ class UserModel {
     this.phone,
     this.avatarUrl,
     required this.username,
+    this.billingDetails,
   });
 
   UserModel copyWith({
@@ -23,6 +60,7 @@ class UserModel {
     String? phone,
     String? avatarUrl,
     String? username,
+    BillingDetails? billingDetails,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -31,6 +69,7 @@ class UserModel {
       phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       username: username ?? this.username,
+      billingDetails: billingDetails ?? this.billingDetails,
     );
   }
 }

@@ -60,6 +60,14 @@ class AuthProvider with ChangeNotifier {
     return await _authService.getUserEmail();
   }
 
+  Future<String?> getUserPhone() async {
+    return await _authService.getUserPhone();
+  }
+
+  Future<String?> getUserAvatarUrl() async {
+    return await _authService.getUserAvatarUrl();
+  }
+
   Future<String?> getUserDisplayName() async {
     return await _authService.getUserDisplayName();
   }
