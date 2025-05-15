@@ -119,7 +119,7 @@ class ProductCard extends StatelessWidget {
               style: TextStyle(
                 decoration: TextDecoration.lineThrough,
                 color: Colors.grey.shade600,
-                fontSize: 13,
+                fontSize: 12,
               ),
             ),
           ),
@@ -145,7 +145,7 @@ class ProductCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 10),
         ),
         child: const Text(
           'Add to Cart',
