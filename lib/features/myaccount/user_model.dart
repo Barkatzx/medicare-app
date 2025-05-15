@@ -32,6 +32,8 @@ class BillingDetails {
       email: email ?? this.email,
     );
   }
+
+  static empty() {}
 }
 
 class UserModel {

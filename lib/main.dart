@@ -8,13 +8,15 @@ import '/features/auth/provider/auth_provider.dart';
 import '/features/auth/provider/auth_wrapper.dart';
 import '/features/cart/cart_provider.dart';
 import '/features/myaccount/account_provider.dart';
+import '/features/orders/order_provider.dart';
+import '/features/orders/orders_page.dart';
 import '/shared/widgets/main_navigation_scaffold.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   const storage = FlutterSecureStorage();
-  await storage.deleteAll(); // Optional: Clear secure storage on app start
+  await storage.deleteAll();
 
   runApp(
     MultiProvider(
@@ -22,6 +24,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
       child: const MyApp(),
     ),
@@ -41,8 +44,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: const AuthWrapper(),
       routes: {
-        '/main': (context) => const MainNavigationScaffold(),
+        '/home': (context) => const MainNavigationScaffold(),
         '/login': (context) => const LoginScreen(),
+        '/orders': (context) => const OrdersPage(),
       },
     );
   }

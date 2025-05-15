@@ -10,6 +10,12 @@ import '../../features/cart/cart_provider.dart';
 class MainNavigationScaffold extends StatefulWidget {
   const MainNavigationScaffold({super.key});
 
+  static void navigateToTab(BuildContext context, int index) {
+    final state =
+        context.findAncestorStateOfType<_MainNavigationScaffoldState>();
+    state?._onItemTapped(index);
+  }
+
   @override
   State<MainNavigationScaffold> createState() => _MainNavigationScaffoldState();
 }

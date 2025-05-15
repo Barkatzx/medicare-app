@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 import '/core/config/api_config.dart';
+import '/features/myaccount/user_model.dart';
 
 class AuthService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -126,6 +127,91 @@ class AuthService {
     return true; // Placeholder - always returns true in this example
   }
 
+  Future<BillingDetails?> fetchAndStoreBillingDetails(
+    String userToken,
+    int customerId,
+  ) async {
+    try {
+      final url = Uri.parse(
+        '${ApiConfig.customersEndpoint}/$customerId?consumerKey=${ApiConfig.consumerKey}&consumerSecret=${ApiConfig.consumerSecret}',
+      );
+
+      final response = await client.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final billing = data['billing'];
+
+        if (billing != null) {
+          final billingDetails = BillingDetails(
+            firstName: billing['first_name'] ?? '',
+            lastName: billing['last_name'] ?? '',
+            country: billing['country'] ?? '',
+            address1: billing['address_1'] ?? '',
+            phone: billing['phone'] ?? '',
+            email: billing['email'] ?? '',
+          );
+          await _storage.write(
+            key: 'billing_first_name',
+            value: billingDetails.firstName,
+          );
+          await _storage.write(
+            key: 'billing_last_name',
+            value: billingDetails.lastName,
+          );
+          await _storage.write(
+            key: 'billing_country',
+            value: billingDetails.country,
+          );
+          await _storage.write(
+            key: 'billing_address1',
+            value: billingDetails.address1,
+          );
+          await _storage.write(
+            key: 'billing_phone',
+            value: billingDetails.phone,
+          );
+          await _storage.write(
+            key: 'billing_email',
+            value: billingDetails.email,
+          );
+
+          return billingDetails;
+        }
+      } else {
+        print('Failed to fetch billing details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Exception fetching billing details: $e');
+    }
+    return null;
+  }
+
+  // Get billing details from storage
+  Future<BillingDetails?> getStoredBillingDetails() async {
+    final firstName = await _storage.read(key: 'billing_first_name');
+    if (firstName == null) return null;
+
+    return BillingDetails(
+      firstName: firstName,
+      lastName: await _storage.read(key: 'billing_last_name') ?? '',
+      country: await _storage.read(key: 'billing_country') ?? '',
+      address1: await _storage.read(key: 'billing_address1') ?? '',
+      phone: await _storage.read(key: 'billing_phone') ?? '',
+      email: await _storage.read(key: 'billing_email') ?? '',
+    );
+  }
+
+  // Update billing details in storage
+  Future<void> updateBillingDetails(BillingDetails details) async {
+    await _storage.write(key: 'billing_first_name', value: details.firstName);
+    await _storage.write(key: 'billing_last_name', value: details.lastName);
+    await _storage.write(key: 'billing_country', value: details.country);
+    await _storage.write(key: 'billing_address1', value: details.address1);
+    await _storage.write(key: 'billing_phone', value: details.phone);
+    await _storage.write(key: 'billing_email', value: details.email);
+  }
+
   Future<void> _storeAuthData(Map<String, dynamic> data) async {
     await _storage.write(key: 'auth_token', value: data['token']);
     await _storage.write(key: 'user_email', value: data['user_email']);
@@ -160,10 +246,6 @@ class AuthService {
 
   Future<String?> getUserEmail() async {
     return await _storage.read(key: 'user_email');
-  }
-
-  Future<String?> getUserPhone() async {
-    return await _storage.read(key: 'user_phone');
   }
 
   Future<String?> getUserAvatarUrl() async {

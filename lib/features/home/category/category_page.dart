@@ -40,10 +40,12 @@ class _CategoryPageState extends State<CategoryPage> {
   }
 
   Future<void> fetchCategories() async {
+    if (!mounted) return; // Guard before initial setState
     setState(() {
       isLoading = true;
       errorMessage = '';
     });
+
     try {
       final credentials = base64Encode(
         utf8.encode('${ApiConfig.consumerKey}:${ApiConfig.consumerSecret}'),
@@ -55,6 +57,9 @@ class _CategoryPageState extends State<CategoryPage> {
           'Content-Type': 'application/json',
         },
       );
+
+      if (!mounted) return; // Guard again before updating UI
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -69,6 +74,7 @@ class _CategoryPageState extends State<CategoryPage> {
         });
       }
     } catch (e) {
+      if (!mounted) return; // Guard on error path too
       setState(() {
         errorMessage = 'Failed to load categories: $e';
         isLoading = false;

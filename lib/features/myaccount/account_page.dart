@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '/features/auth/provider/auth_provider.dart';
 import '/features/myaccount/account_provider.dart';
 import '/features/myaccount/user_model.dart';
+import '/features/orders/orders_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -65,12 +66,29 @@ class _AccountPageState extends State<AccountPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Account'),
-        centerTitle: true,
+        // centerTitle: true,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _showUpdateDialog(context, accountProvider, user),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: TextButton.icon(
+              onPressed: () => _showEditOptions(context, accountProvider, user),
+              icon: const Icon(Icons.edit_square, color: Colors.black),
+              label: const Text(
+                'Edit Profile',
+                style: TextStyle(color: Colors.black),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFF5F5F5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -79,13 +97,13 @@ class _AccountPageState extends State<AccountPage> {
         child: Column(
           children: [
             _buildProfileHeader(context, user, theme),
-            const SizedBox(height: 24),
-            _buildAccountDetailsCard(user, theme),
+            const SizedBox(height: 10),
+            // _buildAccountDetailsCard(user, theme),
             if (user.billingDetails != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               _buildBillingDetailsCard(user.billingDetails!, theme),
             ],
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             _buildActionButtons(context, theme),
           ],
         ),
@@ -163,21 +181,17 @@ class _AccountPageState extends State<AccountPage> {
                           (context, url, error) => const Icon(Icons.person),
                     ),
                   )
-                  : Icon(
-                    Icons.person,
-                    size: 50,
-                    color: theme.colorScheme.primary,
-                  ),
+                  : Icon(Icons.person, size: 80, color: Colors.indigo),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         Text(
-          user.name,
+          user.billingDetails?.lastName ?? 'Not provided',
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         if (user.email.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 5),
           Text(
             user.email,
             style: theme.textTheme.bodyLarge?.copyWith(
@@ -189,32 +203,75 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  Widget _buildAccountDetailsCard(UserModel user, ThemeData theme) {
+  // Widget _buildAccountDetailsCard(UserModel user, ThemeData theme) {
+  //   return Card(
+  //     elevation: 2,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16),
+  //       child: Column(
+  //         children: [
+  //           _buildDetailRow(
+  //             icon: Icons.person,
+  //             label: 'Username',
+  //             value: user.username,
+  //             theme: theme,
+  //           ),
+  //           const Divider(height: 24),
+  //           _buildDetailRow(
+  //             icon: Icons.email,
+  //             label: 'Email',
+  //             value: user.email,
+  //             theme: theme,
+  //           ),
+  //           const Divider(height: 24),
+  //           _buildDetailRow(
+  //             icon: Icons.phone,
+  //             label: 'Phone',
+  //             value: user.billingDetails?.phone ?? 'Not provided',
+  //             theme: theme,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildBillingDetailsCard(BillingDetails billing, ThemeData theme) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Row(mainAxisAlignment: MainAxisAlignment.spaceBetween),
+            // const SizedBox(height: 12),
             _buildDetailRow(
-              icon: Icons.phone,
-              label: 'Phone',
-              value: user.phone ?? 'Not provided',
+              icon: Icons.medical_information,
+              label: 'Pharmecy Name',
+              value:
+                  billing.firstName.isNotEmpty
+                      ? billing.firstName
+                      : 'Not provided',
               theme: theme,
             ),
-            const Divider(height: 24),
-            _buildDetailRow(
-              icon: Icons.email,
-              label: 'Email',
-              value: user.email,
-              theme: theme,
-            ),
-            const Divider(height: 24),
+            const Divider(height: 20),
             _buildDetailRow(
               icon: Icons.location_on,
               label: 'Address',
-              value: user.billingDetails?.address1 ?? 'Not provided',
+              value:
+                  billing.address1.isNotEmpty
+                      ? billing.address1
+                      : 'Not provided',
+              theme: theme,
+            ),
+            const Divider(height: 20),
+            _buildDetailRow(
+              icon: Icons.phone,
+              label: 'Phone',
+              value: billing.phone.isNotEmpty ? billing.phone : 'Not provided',
               theme: theme,
             ),
           ],
@@ -260,24 +317,33 @@ class _AccountPageState extends State<AccountPage> {
           context,
           icon: Icons.shopping_bag,
           title: 'My Orders',
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const OrdersPage()),
+            );
+          },
           theme: theme,
         ),
         _buildListTileButton(
           context,
           icon: Icons.settings,
           title: 'Settings',
-          onTap: () {},
+          onTap: () {
+            // Navigate to settings screen
+          },
           theme: theme,
         ),
         _buildListTileButton(
           context,
           icon: Icons.help_center,
           title: 'Help & Support',
-          onTap: () {},
+          onTap: () {
+            // Navigate to help screen
+          },
           theme: theme,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
@@ -290,65 +356,13 @@ class _AccountPageState extends State<AccountPage> {
               side: BorderSide(color: theme.colorScheme.error),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
             child: const Text('Logout'),
           ),
         ),
       ],
-    );
-  }
-
-  //Billing Details
-  Widget _buildBillingDetailsCard(BillingDetails billing, ThemeData theme) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Billing Address', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 12),
-            _buildDetailRow(
-              icon: Icons.person,
-              label: 'Name',
-              value: '${billing.firstName} ${billing.lastName}',
-              theme: theme,
-            ),
-            const Divider(height: 24),
-            _buildDetailRow(
-              icon: Icons.location_on,
-              label: 'Address',
-              value: billing.address1,
-              theme: theme,
-            ),
-            const Divider(height: 24),
-            _buildDetailRow(
-              icon: Icons.flag,
-              label: 'Country',
-              value: billing.country,
-              theme: theme,
-            ),
-            const Divider(height: 24),
-            _buildDetailRow(
-              icon: Icons.phone,
-              label: 'Phone',
-              value: billing.phone,
-              theme: theme,
-            ),
-            const Divider(height: 24),
-            _buildDetailRow(
-              icon: Icons.email,
-              label: 'Email',
-              value: billing.email,
-              theme: theme,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -363,7 +377,7 @@ class _AccountPageState extends State<AccountPage> {
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: ListTile(
@@ -378,34 +392,130 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  void _showUpdateDialog(
+  void _showEditOptions(
     BuildContext context,
     AccountProvider accountProvider,
     UserModel user,
   ) {
-    final theme = Theme.of(context);
-    final nameController = TextEditingController(text: user.name);
-    final phoneController = TextEditingController(text: user.phone ?? '');
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('Edit Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditProfileDialog(context, accountProvider, user);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.location_on),
+                title: const Text('Edit Billing Details'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (user.billingDetails != null) {
+                    _showEditBillingDialog(context, user.billingDetails!);
+                  }
+                },
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showEditProfileDialog(
+    BuildContext context,
+    AccountProvider accountProvider,
+    UserModel user,
+  ) {
+    final nameController = TextEditingController(
+      text: user.billingDetails?.lastName,
+    );
+    final phoneController = TextEditingController(text: user.email);
 
     showDialog(
       context: context,
       builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+          (context) => AlertDialog(
+            title: const Text('Edit Profile'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: const Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: phoneController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: const Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await accountProvider.updateUserProfile(
+                    context,
+                    firstName: nameController.text,
+                    phone: phoneController.text,
+                  );
+                  if (mounted) Navigator.pop(context);
+                },
+                child: const Text(
+                  'Save',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showEditBillingDialog(BuildContext context, BillingDetails billing) {
+    final accountProvider = context.read<AccountProvider>();
+
+    final firstNameController = TextEditingController(text: billing.firstName);
+    final lastNameController = TextEditingController(text: billing.lastName);
+    final addressController = TextEditingController(text: billing.address1);
+    final countryController = TextEditingController(text: billing.country);
+    final phoneController = TextEditingController(text: billing.phone);
+    final emailController = TextEditingController(text: billing.email);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Edit Billing Details'),
+            content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Edit Profile', style: theme.textTheme.headlineSmall),
-                  const SizedBox(height: 20),
                   TextField(
-                    controller: nameController,
+                    controller: firstNameController,
                     decoration: InputDecoration(
-                      labelText: 'Full Name',
+                      labelText: 'Pharmecy Name',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -414,9 +524,42 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                   const SizedBox(height: 16),
                   TextField(
+                    controller: lastNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Your Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: addressController,
+                    decoration: InputDecoration(
+                      labelText: 'Address',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.location_on),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // TextField(
+                  //   controller: countryController,
+                  //   decoration: InputDecoration(
+                  //     labelText: 'Country',
+                  //     border: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //     prefixIcon: const Icon(Icons.flag),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 16),
+                  TextField(
                     controller: phoneController,
                     decoration: InputDecoration(
-                      labelText: 'Phone Number',
+                      labelText: 'Phone',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -424,40 +567,45 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                     keyboardType: TextInputType.phone,
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                        ),
-                        onPressed: () async {
-                          await accountProvider.updateUserProfile(
-                            context,
-                            name: nameController.text,
-                            phone: phoneController.text,
-                          );
-                          if (mounted) Navigator.pop(context);
-                        },
-                        child: const Text('Save Changes'),
-                      ),
-                    ],
+                      prefixIcon: const Icon(Icons.email),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
                   ),
                 ],
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await accountProvider.updateUserProfile(
+                    context,
+                    firstName: firstNameController.text,
+                    lastName: lastNameController.text,
+                    phone: phoneController.text,
+                    country: countryController.text,
+                    address1: addressController.text,
+                  );
+                  if (mounted) Navigator.pop(context);
+                },
+                child: const Text(
+                  'Save',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
     );
   }
