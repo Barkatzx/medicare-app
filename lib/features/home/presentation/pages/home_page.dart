@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage> {
               snapshot.hasData ? 'Welcome, ${snapshot.data}' : 'Welcome',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onPrimary,
+                color: Colors.black,
               ),
             );
           },
@@ -160,11 +160,10 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.logout, color: theme.colorScheme.onPrimary),
+            icon: Icon(Icons.logout, color: Colors.black),
             onPressed: () => _logout(context, authProvider),
           ),
         ],
-        backgroundColor: theme.colorScheme.primary,
         elevation: 0,
       ),
       body: _buildProductGrid(theme),
