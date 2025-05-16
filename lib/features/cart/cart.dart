@@ -27,7 +27,7 @@ class CartPage extends StatelessWidget {
                 return Text(
                   '${cart.itemCount} items',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -108,21 +108,14 @@ class CartPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.00),
-            blurRadius: 0,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
           Container(
             margin: const EdgeInsets.all(2),
-            width: 100,
-            height: 100,
+            width: 90,
+            height: 90,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: const Color(0xFFf5f5f5),
@@ -150,7 +143,7 @@ class CartPage extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -175,7 +168,7 @@ class CartPage extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 5),
                       ],
                       Text(
                         '৳${item.price.toStringAsFixed(2)}',
@@ -188,17 +181,17 @@ class CartPage extends StatelessWidget {
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
+                            horizontal: 5,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red[400],
-                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.red[50],
+                            borderRadius: BorderRadius.circular(5),
                           ),
                           child: Text(
                             '-${discountPercent.toStringAsFixed(0)}%',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Colors.red[800],
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -219,7 +212,7 @@ class CartPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
                       _quantityButton(
@@ -230,16 +223,16 @@ class CartPage extends StatelessWidget {
                                     ? cart.decreaseQuantity(item.id)
                                     : cart.removeItem(item.id),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 5),
                       SizedBox(
                         width: 30,
                         child: Text(
                           item.quantity.toString(),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 15),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 5),
                       _quantityButton(
                         icon: Icons.add,
                         onPressed: () => cart.increaseQuantity(item.id),
@@ -250,7 +243,7 @@ class CartPage extends StatelessWidget {
                         color: Colors.red,
                         onPressed: () => cart.removeItem(item.id),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 5),
                     ],
                   ),
                 ],
@@ -268,8 +261,8 @@ class CartPage extends StatelessWidget {
     Color? color,
   }) {
     return Container(
-      width: 30,
-      height: 30,
+      width: 25,
+      height: 25,
       decoration: BoxDecoration(
         color: const Color(0xFFf5f5f5),
         borderRadius: BorderRadius.circular(6),
@@ -290,13 +283,6 @@ class CartPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -324,11 +310,7 @@ class CartPage extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '-৳${cart.totalSaved.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
+                  style: const TextStyle(fontSize: 15, color: Colors.green),
                 ),
               ],
             ),
