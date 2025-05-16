@@ -14,17 +14,26 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
+  Future<void> _loadOrders() async {
+    try {
+      await Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      ).fetchOrders(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to refresh orders: ${e.toString()}')),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     // Delay the fetch to after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<OrderProvider>(context, listen: false).fetchOrders(context);
+      _loadOrders();
     });
-  }
-
-  Future<void> _loadOrders() async {
-    await context.read<OrderProvider>().fetchOrders(context);
   }
 
   @override
@@ -41,10 +50,25 @@ class _OrdersPageState extends State<OrdersPage> {
         ),
         centerTitle: false,
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadOrders),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Refreshing Your Orders...'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+              await _loadOrders();
+            },
+          ),
         ],
       ),
-      body: _buildBody(orderProvider, theme),
+      body: RefreshIndicator(
+        onRefresh: _loadOrders,
+        child: _buildBody(orderProvider, theme),
+      ),
     );
   }
 
@@ -65,7 +89,12 @@ class _OrdersPageState extends State<OrdersPage> {
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadOrders, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: () async {
+                await _loadOrders();
+              },
+              child: const Text('Retry'),
+            ),
           ],
         ),
       );
@@ -85,43 +114,31 @@ class _OrdersPageState extends State<OrdersPage> {
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadOrders,
-              child: const Text(
-                'Refresh',
-                style: TextStyle(
-                  color: Colors.white,
-                ), // 👈 Set your desired color here
-              ),
-            ),
           ],
         ),
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadOrders,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: orderProvider.orders.length,
-        itemBuilder: (context, index) {
-          final order = orderProvider.orders[index];
-          return _buildOrderCard(order, theme, context);
-        },
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: orderProvider.orders.length,
+      itemBuilder: (context, index) {
+        final order = orderProvider.orders[index];
+        return _buildOrderCard(order, theme, context);
+      },
     );
   }
 
   Widget _buildOrderCard(Order order, ThemeData theme, BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => _showOrderDetails(context, order),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -145,17 +162,17 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 1),
               Text(
                 DateFormat('MMM dd, yyyy - hh:mm a').format(order.dateCreated),
                 style: theme.textTheme.bodySmall,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 1),
               ...order.items
                   .take(2)
                   .map(
                     (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.only(bottom: 1),
                       child: Row(
                         children: [
                           if (item.imageUrl != null)
@@ -164,7 +181,7 @@ class _OrdersPageState extends State<OrdersPage> {
                               height: 40,
                               margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                                 image: DecorationImage(
                                   image: NetworkImage(item.imageUrl!),
                                   fit: BoxFit.cover,
@@ -177,35 +194,25 @@ class _OrdersPageState extends State<OrdersPage> {
                               style: theme.textTheme.bodyMedium,
                             ),
                           ),
-                          Text(
-                            item.total,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text(item.total),
                         ],
                       ),
                     ),
                   ),
               if (order.items.length > 2)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: 5),
                   child: Text(
                     '+ ${order.items.length - 2} more items',
                     style: theme.textTheme.bodySmall,
                   ),
                 ),
-              const Divider(height: 24),
+              const Divider(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Total', style: theme.textTheme.bodyMedium),
-                  Text(
-                    order.total,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(order.total),
                 ],
               ),
             ],
@@ -228,7 +235,7 @@ class _OrdersPageState extends State<OrdersPage> {
       case 'refunded':
         return Colors.purple;
       default:
-        return Colors.grey;
+        return Colors.pink;
     }
   }
 
@@ -267,7 +274,7 @@ class OrderDetailsSheet extends StatelessWidget {
     return SingleChildScrollView(
       controller: scrollController,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -275,10 +282,10 @@ class OrderDetailsSheet extends StatelessWidget {
               child: Container(
                 width: 40,
                 height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
                   color: theme.dividerColor,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
@@ -288,7 +295,7 @@ class OrderDetailsSheet extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Row(
               children: [
                 Text(
@@ -309,17 +316,17 @@ class OrderDetailsSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 5),
             Text(
               'Items (${order.items.length})',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             ...order.items.map(
               (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -359,7 +366,7 @@ class OrderDetailsSheet extends StatelessWidget {
                 ),
               ),
             ),
-            const Divider(height: 32),
+            const Divider(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -367,18 +374,15 @@ class OrderDetailsSheet extends StatelessWidget {
                 Text(order.total, style: theme.textTheme.bodyMedium),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Shipping', style: theme.textTheme.bodyMedium),
-                Text(
-                  'Free', // You would get this from order.shipping_total
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text('Free', style: theme.textTheme.bodyMedium),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -386,7 +390,7 @@ class OrderDetailsSheet extends StatelessWidget {
                 Text(order.paymentMethod, style: theme.textTheme.bodyMedium),
               ],
             ),
-            const Divider(height: 32),
+            const Divider(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -404,7 +408,7 @@ class OrderDetailsSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 10),
             if (order.billing != null) ...[
               Text(
                 'Billing Address',
@@ -412,7 +416,7 @@ class OrderDetailsSheet extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 '${order.billing!.firstName} ${order.billing!.lastName}',
                 style: theme.textTheme.bodyMedium,
@@ -432,7 +436,7 @@ class OrderDetailsSheet extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(order.billing!.email, style: theme.textTheme.bodyMedium),
               ],
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
             ],
             if (order.shipping != null) ...[
               Text(
@@ -441,7 +445,7 @@ class OrderDetailsSheet extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 '${order.shipping!.firstName} ${order.shipping!.lastName}',
                 style: theme.textTheme.bodyMedium,
@@ -468,7 +472,7 @@ class OrderDetailsSheet extends StatelessWidget {
                 ),
               ],
             ],
-            const SizedBox(height: 32),
+            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -488,7 +492,7 @@ class OrderDetailsSheet extends StatelessWidget {
       case 'refunded':
         return Colors.purple;
       default:
-        return Colors.grey;
+        return Colors.pink;
     }
   }
 }
