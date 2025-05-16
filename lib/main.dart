@@ -9,14 +9,14 @@ import '/features/auth/provider/auth_wrapper.dart';
 import '/features/cart/cart_provider.dart';
 import '/features/myaccount/account_provider.dart';
 import '/features/orders/order_provider.dart';
+import '/features/orders/orders_page.dart';
 import '/shared/widgets/main_navigation_scaffold.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize secure storage (remove deleteAll in production)
   const storage = FlutterSecureStorage();
-  await storage.deleteAll(); // Development only
+  await storage.deleteAll();
 
   runApp(
     MultiProvider(
@@ -26,13 +26,13 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
-      child: const MediCareApp(),
+      child: const MyApp(),
     ),
   );
 }
 
-class MediCareApp extends StatelessWidget {
-  const MediCareApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +44,10 @@ class MediCareApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: const AuthWrapper(),
       routes: {
-        '/home': (context) => const MainNavigationScaffold(selectedTab: 0),
+        '/home': (context) => const MainNavigationScaffold(),
         '/login': (context) => const LoginScreen(),
+        '/orders': (context) => const OrdersPage(),
       },
-      onUnknownRoute:
-          (settings) => MaterialPageRoute(
-            builder: (context) => const MainNavigationScaffold(selectedTab: 0),
-          ),
     );
   }
 }

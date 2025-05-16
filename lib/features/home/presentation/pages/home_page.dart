@@ -1,12 +1,9 @@
-// lib/ui/screens/home_page.dart
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 import '/core/config/api_config.dart';
-import '/features/auth/provider/auth_provider.dart';
 import '/features/home/presentation/product_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -141,36 +138,17 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
-        title: FutureBuilder(
-          future: authProvider.getUserDisplayName(),
-          builder: (context, snapshot) {
-            return Text(
-              snapshot.hasData ? 'Welcome, ${snapshot.data}' : 'Welcome',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            );
-          },
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.black),
-            onPressed: () => _logout(context, authProvider),
-          ),
-        ],
         elevation: 0,
+        toolbarHeight: 0, // Completely removes the AppBar space
       ),
-      body: _buildProductGrid(theme),
+      body: _buildProductList(theme),
     );
   }
 
-  Widget _buildProductGrid(ThemeData theme) {
+  Widget _buildProductList(ThemeData theme) {
     if (isLoading && products.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -200,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: _fetchInitialProducts,
@@ -219,32 +197,14 @@ class _HomePageState extends State<HomePage> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(top: 24, bottom: 16),
-            sliver: SliverToBoxAdapter(
-              child: Center(
-                child: Text(
-                  'Featured Products',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => ProductCard(product: products[index]),
-                childCount: products.length,
-              ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ProductCard(product: products[index]),
+                );
+              }, childCount: products.length),
             ),
           ),
           if (isLoadingMore)
@@ -271,12 +231,5 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-  }
-
-  Future<void> _logout(BuildContext context, AuthProvider authProvider) async {
-    await authProvider.logout();
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
   }
 }
