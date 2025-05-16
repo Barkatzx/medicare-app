@@ -114,8 +114,8 @@ class CartPage extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.all(2),
-            width: 90,
-            height: 90,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: const Color(0xFFf5f5f5),
@@ -156,7 +156,7 @@ class CartPage extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 1),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
                       if (hasDiscount) ...[
@@ -178,7 +178,7 @@ class CartPage extends StatelessWidget {
                         ),
                       ),
                       if (hasDiscount) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 5),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 5,
@@ -223,16 +223,16 @@ class CartPage extends StatelessWidget {
                                     ? cart.decreaseQuantity(item.id)
                                     : cart.removeItem(item.id),
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 10),
                       SizedBox(
-                        width: 30,
+                        width: 20,
                         child: Text(
                           item.quantity.toString(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 15),
                         ),
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 10),
                       _quantityButton(
                         icon: Icons.add,
                         onPressed: () => cart.increaseQuantity(item.id),
@@ -243,7 +243,7 @@ class CartPage extends StatelessWidget {
                         color: Colors.red,
                         onPressed: () => cart.removeItem(item.id),
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 10),
                     ],
                   ),
                 ],
@@ -261,14 +261,14 @@ class CartPage extends StatelessWidget {
     Color? color,
   }) {
     return Container(
-      width: 25,
-      height: 25,
+      width: 30,
+      height: 30,
       decoration: BoxDecoration(
         color: const Color(0xFFf5f5f5),
         borderRadius: BorderRadius.circular(6),
       ),
       child: IconButton(
-        icon: Icon(icon, size: 16, color: color ?? Colors.black),
+        icon: Icon(icon, size: 20, color: color ?? Colors.black),
         onPressed: onPressed,
         padding: EdgeInsets.zero,
       ),
