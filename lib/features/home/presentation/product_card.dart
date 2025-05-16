@@ -29,24 +29,24 @@ class ProductCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Left side - Image
             Container(
-              width: 80,
-              height: 80,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 child: _buildProductImage(imageUrl),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
 
             // Middle - Info
             Expanded(
@@ -70,7 +70,7 @@ class ProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
 
                   // Title
                   Text(
@@ -78,12 +78,11 @@ class ProductCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      height: 1.3,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 5),
 
                   // Prices with Discount
                   Row(
@@ -98,7 +97,7 @@ class ProductCard extends StatelessWidget {
                       ),
                       if (regularPrice != null &&
                           regularPrice > sellingPrice) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 5),
                         Text(
                           '৳${regularPrice.toStringAsFixed(2)}',
                           style: TextStyle(
@@ -107,7 +106,7 @@ class ProductCard extends StatelessWidget {
                             color: Colors.grey.shade600,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 5),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -135,14 +134,14 @@ class ProductCard extends StatelessWidget {
 
             // Right side - Add to Cart
             Container(
-              height: 80,
+              height: 50,
               alignment: Alignment.center,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 35,
-                    height: 35,
+                    width: 30,
+                    height: 30,
                     decoration: BoxDecoration(
                       color: Colors.indigo.shade50,
                       borderRadius: BorderRadius.circular(5),
@@ -150,7 +149,7 @@ class ProductCard extends StatelessWidget {
                     child: IconButton(
                       icon: const Icon(
                         Icons.add,
-                        size: 16,
+                        size: 20,
                         color: Colors.indigo,
                       ),
                       padding: EdgeInsets.zero,
