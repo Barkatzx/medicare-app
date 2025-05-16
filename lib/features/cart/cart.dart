@@ -363,8 +363,7 @@ class CartPage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
+                Navigator.of(context, rootNavigator: false).push(
                   MaterialPageRoute(builder: (context) => const CheckoutPage()),
                 );
               },

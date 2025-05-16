@@ -38,7 +38,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
         return isLoggedIn
-            ? const MainNavigationScaffold()
+            ? const MainNavigationScaffold(selectedTab: 0)
             : const LoginScreen();
       },
     );

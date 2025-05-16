@@ -350,7 +350,11 @@ class _AccountPageState extends State<AccountPage> {
             onPressed: () {
               final authProvider = context.read<AuthProvider>();
               authProvider.logout();
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/login', (route) => false);
             },
+
             style: OutlinedButton.styleFrom(
               foregroundColor: theme.colorScheme.error,
               side: BorderSide(color: theme.colorScheme.error),
