@@ -19,7 +19,6 @@ class ProductCard extends StatelessWidget {
     );
     final discountPercent = _calculateDiscount(regularPrice, sellingPrice);
 
-    // Get first category name or fallback
     final List categories = product['categories'] ?? [];
     final String categoryName =
         categories.isNotEmpty
@@ -49,23 +48,65 @@ class ProductCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // Middle - Category, Title, Prices
+            // Middle - Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category and Discount
+                  // Category
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          categoryName,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Title
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Prices with Discount
                   Row(
                     children: [
                       Text(
-                        categoryName,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
+                        '৳${sellingPrice.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.indigo,
                         ),
                       ),
-                      if (discountPercent > 0) ...[
+                      if (regularPrice != null &&
+                          regularPrice > sellingPrice) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '৳${regularPrice.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            decoration: TextDecoration.lineThrough,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -88,51 +129,11 @@ class ProductCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 4),
-
-                  // Product Title
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Prices
-                  Row(
-                    children: [
-                      Text(
-                        '৳${sellingPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.indigo,
-                        ),
-                      ),
-                      if (regularPrice != null &&
-                          regularPrice > sellingPrice) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '৳${regularPrice.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            decoration: TextDecoration.lineThrough,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
                 ],
               ),
             ),
 
-            // Right side - Centered Add to Cart Button
+            // Right side - Add to Cart
             Container(
               height: 80,
               alignment: Alignment.center,
@@ -156,7 +157,6 @@ class ProductCard extends StatelessWidget {
                       onPressed: () => _addToCart(context),
                     ),
                   ),
-                  const SizedBox(height: 4),
                 ],
               ),
             ),
@@ -214,7 +214,7 @@ class ProductCard extends StatelessWidget {
       SnackBar(
         content: Text('Added ${product['name']} to your bag'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green[500],
         duration: const Duration(seconds: 1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),

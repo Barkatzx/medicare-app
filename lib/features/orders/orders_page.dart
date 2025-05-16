@@ -35,7 +35,11 @@ class _OrdersPageState extends State<OrdersPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Orders'),
-        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        centerTitle: false,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadOrders),
         ],

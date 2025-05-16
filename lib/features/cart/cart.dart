@@ -20,7 +20,7 @@ class CartPage extends StatelessWidget {
           children: [
             const Text(
               'My Cart',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Consumer<CartProvider>(
               builder: (context, cart, child) {
