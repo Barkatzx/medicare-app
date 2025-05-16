@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
+import '/core/config/api_config.dart';
 import '../cart/cart_provider.dart';
 import '../cart/product_model.dart';
 
@@ -21,29 +25,99 @@ class CategoryProductsPage extends StatefulWidget {
 }
 
 class _CategoryProductsPageState extends State<CategoryProductsPage> {
-  late Future<List<Product>> _productsFuture;
-  bool _isRefreshing = false;
+  List<Product> _products = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _page = 1;
+  final int _perPage = 10;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _productsFuture = widget.fetchProducts();
+    _loadInitialProducts();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<List<Product>> _fetchProductsPage(int page) async {
+    final url = Uri.parse(
+      '${ApiConfig.baseUrl}/products?category=${widget.categoryId}&page=$page&per_page=$_perPage',
+    );
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization':
+            'Basic ${base64Encode(utf8.encode('${ApiConfig.consumerKey}:${ApiConfig.consumerSecret}'))}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Product.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
+  Future<void> _loadInitialProducts() async {
+    setState(() => _isLoading = true);
+    try {
+      final products = await _fetchProductsPage(1);
+      setState(() {
+        _products = products;
+        _isLoading = false;
+        _hasMore = products.length == _perPage;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load products: $e')));
+    }
+  }
+
+  Future<void> _loadMoreProducts() async {
+    if (_isLoading || !_hasMore) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final nextPage = _page + 1;
+      final newProducts = await _fetchProductsPage(nextPage);
+
+      setState(() {
+        _page = nextPage;
+        _isLoading = false;
+        _products.addAll(newProducts);
+        _hasMore = newProducts.length == _perPage;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load more products: $e')),
+      );
+    }
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _loadMoreProducts();
+    }
   }
 
   Future<void> _refreshProducts() async {
-    setState(() => _isRefreshing = true);
-    try {
-      final products = await widget.fetchProducts();
-      setState(() {
-        _productsFuture = Future.value(products);
-        _isRefreshing = false;
-      });
-    } catch (e) {
-      setState(() => _isRefreshing = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to refresh: $e')));
-    }
+    setState(() {
+      _products = [];
+      _page = 1;
+      _hasMore = true;
+    });
+    await _loadInitialProducts();
   }
 
   Widget _buildProductItem(BuildContext context, Product product) {
@@ -202,49 +276,9 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
       body: RefreshIndicator(
         onRefresh: _refreshProducts,
         color: const Color(0xFF6C63FF),
-        child: FutureBuilder<List<Product>>(
-          future: _productsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting &&
-                !_isRefreshing) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Failed to load products',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      snapshot.error.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _refreshProducts,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (snapshot.hasData) {
-              final products = snapshot.data!;
-              if (products.isEmpty) {
-                return Center(
+        child:
+            _products.isEmpty && !_isLoading
+                ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -282,19 +316,22 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                       ),
                     ],
                   ),
-                );
-              }
-              return ListView.builder(
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  return _buildProductItem(context, products[index]);
-                },
-              );
-            }
-
-            return Container();
-          },
-        ),
+                )
+                : ListView.builder(
+                  controller: _scrollController,
+                  itemCount: _products.length + (_hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index >= _products.length) {
+                      return _hasMore
+                          ? const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                          : const SizedBox();
+                    }
+                    return _buildProductItem(context, _products[index]);
+                  },
+                ),
       ),
     );
   }
