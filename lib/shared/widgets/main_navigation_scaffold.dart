@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/features/home/category/category_page.dart';
+import '/features/home/presentation/pages/featured_products.dart';
 import '/features/home/presentation/pages/home_page.dart';
 import '/features/myaccount/account_page.dart';
 import '../../features/cart/cart.dart';
@@ -25,6 +26,7 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
   final FocusNode _searchFocusNode = FocusNode();
   final List<Widget> _screens = const [
     HomePage(),
+    FeaturedProductsScreen(),
     CategoryPage(),
     CartPage(),
     AccountPage(),
@@ -97,17 +99,22 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
             unselectedItemColor: Colors.grey,
             items: [
               _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
-              _buildNavItem(icon: Icons.category, label: 'Category', index: 1),
+              _buildNavItem(
+                icon: Icons.trending_up,
+                label: 'Trending',
+                index: 1,
+              ),
+              _buildNavItem(icon: Icons.category, label: 'Category', index: 2),
               _buildNavItem(
                 icon: Icons.shopping_cart,
                 label: 'Cart',
-                index: 2,
+                index: 3,
                 badgeCount: cart.items.length,
               ),
               _buildNavItem(
                 icon: Icons.account_circle,
                 label: 'Account',
-                index: 3,
+                index: 4,
               ),
             ],
           );
