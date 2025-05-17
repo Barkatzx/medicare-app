@@ -143,10 +143,7 @@ class _FeaturedProductsScreenState extends State<FeaturedProductsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Featured Products'), elevation: 0),
-      body: _buildProductList(theme),
-    );
+    return Scaffold(body: _buildProductList(theme));
   }
 
   Widget _buildProductList(ThemeData theme) {
