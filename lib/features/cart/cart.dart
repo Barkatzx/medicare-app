@@ -13,31 +13,6 @@ class CartPage extends StatelessWidget {
     final items = cart.items.values.toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFf5f5f5),
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'My Cart',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Consumer<CartProvider>(
-              builder: (context, cart, child) {
-                return Text(
-                  '${cart.itemCount} items',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
       body:
           items.isEmpty
               ? _buildEmptyCart()
