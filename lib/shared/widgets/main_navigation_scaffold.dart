@@ -104,7 +104,7 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
                 label: 'Trending',
                 index: 1,
               ),
-              _buildNavItem(icon: Icons.category, label: 'Category', index: 2),
+              _buildNavItem(icon: Icons.category, label: 'Company', index: 2),
               _buildNavItem(
                 icon: Icons.shopping_cart,
                 label: 'Cart',

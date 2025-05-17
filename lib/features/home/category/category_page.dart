@@ -141,105 +141,88 @@ class _CategoryPageState extends State<CategoryPage> {
     );
   }
 
-  Widget _buildCategoryCard(Category category, int index) {
+  Widget _buildCategoryCard(Category category) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         onTap: () => _navigateToCategoryProducts(context, category),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Row(
+            children: [
+              // Image on left
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Stack(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child:
+                      category.imageUrl.isNotEmpty
+                          ? Image.network(
+                            category.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (_, __, ___) => _buildPlaceholderIcon(),
+                          )
+                          : _buildPlaceholderIcon(),
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Category info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (category.imageUrl.isNotEmpty)
-                      Image.network(
-                        category.imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value:
-                                  loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                            ),
-                          );
-                        },
-                        errorBuilder:
-                            (context, error, stackTrace) =>
-                                _buildPlaceholderImage(),
-                      )
-                    else
-                      _buildPlaceholderImage(),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [],
-                        ),
+                    // Category name
+                    Text(
+                      category.name,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Product count
+                    Text(
+                      '${category.productCount} products',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    category.name,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${category.productCount} products',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
-          ],
+
+              // Chevron icon
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPlaceholderImage() {
-    return Container(
-      color: Colors.grey[100],
-      child: const Center(
-        child: Icon(Icons.medical_information, size: 80, color: Colors.grey),
-      ),
+  Widget _buildPlaceholderIcon() {
+    return const Center(
+      child: Icon(Icons.category, size: 30, color: Colors.grey),
     );
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(
-        strokeWidth: 2,
-        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C63FF)),
-      ),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildErrorState() {
@@ -279,14 +262,8 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Company'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
       body: RefreshIndicator(
         onRefresh: _fetchCategories,
-        color: const Color(0xFF6C63FF),
         child:
             _isLoading
                 ? _buildLoadingState()
@@ -294,18 +271,11 @@ class _CategoryPageState extends State<CategoryPage> {
                 ? _buildErrorState()
                 : _categories.isEmpty
                 ? _buildEmptyState()
-                : GridView.builder(
+                : ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.8,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
                   itemCount: _categories.length,
                   itemBuilder: (context, index) {
-                    return _buildCategoryCard(_categories[index], index);
+                    return _buildCategoryCard(_categories[index]);
                   },
                 ),
       ),
