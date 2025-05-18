@@ -222,7 +222,6 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     'You\'ve reached the end',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      // ignore: deprecated_member_use
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),

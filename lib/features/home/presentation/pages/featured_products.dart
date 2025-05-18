@@ -7,7 +7,14 @@ import '/core/config/api_config.dart';
 import '/features/home/presentation/product_card.dart';
 
 class FeaturedProductsScreen extends StatefulWidget {
-  const FeaturedProductsScreen({Key? key}) : super(key: key);
+  final String searchQuery;
+  final String sortBy;
+
+  const FeaturedProductsScreen({
+    Key? key,
+    this.searchQuery = '',
+    this.sortBy = 'Default',
+  }) : super(key: key);
 
   @override
   State<FeaturedProductsScreen> createState() => _FeaturedProductsScreenState();
@@ -51,14 +58,14 @@ class _FeaturedProductsScreenState extends State<FeaturedProductsScreen> {
       setState(() {
         isLoading = true;
         errorMessage = '';
+        page = 1;
+        hasMore = true;
+        featuredProducts = [];
       });
 
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConfig.productsEndpoint}?featured=true&per_page=$perPage&page=1',
-        ),
-        headers: _getAuthHeaders(),
-      );
+      final uri = _buildUri(page);
+
+      final response = await http.get(uri, headers: _getAuthHeaders());
 
       _handleProductResponse(response, initialLoad: true);
     } catch (e) {
@@ -72,12 +79,9 @@ class _FeaturedProductsScreenState extends State<FeaturedProductsScreen> {
     try {
       setState(() => isLoadingMore = true);
 
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConfig.productsEndpoint}?featured=true&per_page=$perPage&page=$page',
-        ),
-        headers: _getAuthHeaders(),
-      );
+      final uri = _buildUri(page);
+
+      final response = await http.get(uri, headers: _getAuthHeaders());
 
       _handleProductResponse(response);
     } catch (e) {
@@ -87,6 +91,27 @@ class _FeaturedProductsScreenState extends State<FeaturedProductsScreen> {
         setState(() => isLoadingMore = false);
       }
     }
+  }
+
+  Uri _buildUri(int pageNumber) {
+    final Map<String, String> queryParameters = {
+      'featured': 'true',
+      'per_page': perPage.toString(),
+      'page': pageNumber.toString(),
+    };
+
+    if (widget.searchQuery.isNotEmpty) {
+      queryParameters['search'] = widget.searchQuery;
+    }
+
+    if (widget.sortBy != 'Default') {
+      // Adjust this according to your API's sorting options
+      queryParameters['orderby'] = widget.sortBy.toLowerCase();
+    }
+
+    return Uri.parse(
+      ApiConfig.productsEndpoint,
+    ).replace(queryParameters: queryParameters);
   }
 
   Map<String, String> _getAuthHeaders() {
@@ -131,11 +156,6 @@ class _FeaturedProductsScreenState extends State<FeaturedProductsScreen> {
   }
 
   Future<void> _refreshProducts() async {
-    setState(() {
-      featuredProducts = [];
-      page = 1;
-      hasMore = true;
-    });
     await _fetchInitialProducts();
   }
 
