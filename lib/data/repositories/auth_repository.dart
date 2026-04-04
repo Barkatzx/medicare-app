@@ -1,0 +1,26 @@
+import 'package:medicare_app/domain/entities/user_entity.dart';
+
+abstract class AuthRepository {
+  Future<UserEntity> login({
+    String? email,
+    String? phoneNumber,
+    required String password,
+  });
+
+  Future<UserEntity> register({
+    required String name,
+    required String email,
+    required String phoneNumber,
+    required String password,
+  });
+
+  Future<void> logout();
+
+  Future<bool> isLoggedIn();
+
+  Future<String?> getToken();
+
+  Future<void> saveToken(String token);
+
+  Future<void> clearToken();
+}
