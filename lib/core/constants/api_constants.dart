@@ -1,50 +1,71 @@
+import 'dart:io';
+
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:3000';
+  ApiConstants._();
+
+  static String get baseUrl {
+    // For Android Emulator
+    if (Platform.isAndroid) {
+      // Check if running on emulator or physical device
+      // Physical devices need the computer's IP address
+      return 'http://192.168.0.111:3000'; // YOUR MAC'S IP ADDRESS
+    }
+    // For iOS Simulator
+    else if (Platform.isIOS) {
+      return 'http://localhost:3000';
+    } else {
+      return 'http://192.168.0.111:3000';
+    }
+  }
+
+  static const Duration connectionTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
 
   // ==================== AUTHENTICATION ROUTES ====================
-  static const String register = '$baseUrl/api/users/register';
-  static const String login = '$baseUrl/api/users/login';
+  static String get register => '$baseUrl/api/users/register';
+  static String get login => '$baseUrl/api/users/login';
+  static String get verifyAuth => '$baseUrl/api/users/verify-auth';
 
   // ==================== USER PROFILE ROUTES ====================
-  static const String profile = '$baseUrl/api/users/profile';
-  static const String changePassword = '$baseUrl/api/users/change-password';
+  static String get profile => '$baseUrl/api/users/profile';
+  static String get changePassword => '$baseUrl/api/users/change-password';
 
   // ==================== ADDRESS ROUTES ====================
-  static const String addresses = '$baseUrl/api/users/addresses';
+  static String get addresses => '$baseUrl/api/users/addresses';
   static String addressDefault(String addressId) =>
       '$baseUrl/api/users/addresses/$addressId/default';
   static String addressDetail(String addressId) =>
       '$baseUrl/api/users/addresses/$addressId';
 
   // ==================== CART ROUTES ====================
-  static const String cart = '$baseUrl/api/users/cart';
-  static const String cartCount = '$baseUrl/api/users/cart/count';
-  static const String addToCart = '$baseUrl/api/users/cart/add';
+  static String get cart => '$baseUrl/api/users/cart';
+  static String get cartCount => '$baseUrl/api/users/cart/count';
+  static String get addToCart => '$baseUrl/api/users/cart/add';
   static String cartItem(String itemId) =>
       '$baseUrl/api/users/cart/item/$itemId';
-  static const String clearCart = '$baseUrl/api/users/cart/clear';
+  static String get clearCart => '$baseUrl/api/users/cart/clear';
 
   // ==================== NOTIFICATION ROUTES ====================
-  static const String notifications = '$baseUrl/api/users/notifications';
-  static const String markAllRead = '$baseUrl/api/users/notifications/read-all';
+  static String get notifications => '$baseUrl/api/users/notifications';
+  static String get markAllRead => '$baseUrl/api/users/notifications/read-all';
   static String markNotificationRead(String notificationId) =>
       '$baseUrl/api/users/notifications/$notificationId/read';
 
   // ==================== PRODUCT ROUTES ====================
-  static const String products = '$baseUrl/api/products';
-  static const String productsOnSale = '$baseUrl/api/products/on-sale';
-  static const String searchProducts = '$baseUrl/api/products/search';
+  static String get products => '$baseUrl/api/products';
+  static String get productsOnSale => '$baseUrl/api/products/on-sale';
+  static String get searchProducts => '$baseUrl/api/products/search';
   static String productDetail(String id) => '$baseUrl/api/products/$id';
 
   // ==================== CATEGORY ROUTES ====================
-  static const String categories = '$baseUrl/api/categories';
+  static String get categories => '$baseUrl/api/categories';
   static String categoryDetail(String id) => '$baseUrl/api/categories/$id';
   static String categoryProducts(String id) =>
       '$baseUrl/api/categories/$id/products';
 
   // ==================== ORDER ROUTES ====================
-  static const String createOrder = '$baseUrl/api/orders';
-  static const String myOrders = '$baseUrl/api/orders/my-orders';
+  static String get createOrder => '$baseUrl/api/orders';
+  static String get myOrders => '$baseUrl/api/orders/my-orders';
   static String myOrderDetail(String orderId) =>
       '$baseUrl/api/orders/my-orders/$orderId';
   static String cancelOrder(String orderId) =>

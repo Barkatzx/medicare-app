@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../../../domain/entities/user_entity.dart';
 
 class SharedPrefsHelper {
   static const String _tokenKey = 'auth_token';
@@ -21,19 +22,24 @@ class SharedPrefsHelper {
     await _prefs.remove(_tokenKey);
   }
 
-  Future<void> saveUserData(Map<String, dynamic> userData) async {
-    await _prefs.setString(_userKey, json.encode(userData));
+  Future<void> saveUser(UserEntity user) async {
+    await _prefs.setString(_userKey, json.encode(user.toJson()));
   }
 
-  Future<Map<String, dynamic>?> getUserData() async {
+  Future<UserEntity?> getUser() async {
     final userString = _prefs.getString(_userKey);
     if (userString != null) {
-      return json.decode(userString);
+      final userData = json.decode(userString);
+      return UserEntity.fromJson(userData);
     }
     return null;
   }
 
-  Future<void> clearUserData() async {
+  Future<void> clearUser() async {
     await _prefs.remove(_userKey);
+  }
+
+  Future<void> clearAll() async {
+    await _prefs.clear();
   }
 }

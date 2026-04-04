@@ -4,6 +4,9 @@ class UserEntity {
   final String email;
   final String phoneNumber;
   final String? avatar;
+  final String role;
+  final bool isApproved;
+  final String? pharmacyName;
   final DateTime createdAt;
 
   UserEntity({
@@ -12,17 +15,25 @@ class UserEntity {
     required this.email,
     required this.phoneNumber,
     this.avatar,
+    required this.role,
+    required this.isApproved,
+    this.pharmacyName,
     required this.createdAt,
   });
 
   factory UserEntity.fromJson(Map<String, dynamic> json) {
     return UserEntity(
-      id: json['_id'] ?? json['id'],
+      id: json['id'] ?? json['_id'],
       name: json['name'],
       email: json['email'],
       phoneNumber: json['phone_number'],
       avatar: json['avatar'],
-      createdAt: DateTime.parse(json['createdAt']),
+      role: json['role'] ?? 'customer',
+      isApproved: json['isApproved'] ?? false,
+      pharmacyName: json['pharmacy_name'],
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -33,7 +44,22 @@ class UserEntity {
       'email': email,
       'phone_number': phoneNumber,
       'avatar': avatar,
+      'role': role,
+      'isApproved': isApproved,
+      'pharmacy_name': pharmacyName,
       'createdAt': createdAt.toIso8601String(),
     };
+  }
+
+  bool get isCustomer => role.toLowerCase() == 'customer';
+  bool get isAdmin => role.toLowerCase() == 'admin';
+  bool get isPharmacy => role.toLowerCase() == 'pharmacy';
+
+  String get approvalStatusMessage {
+    if (isApproved) {
+      return 'Account verified';
+    } else {
+      return 'Your account is pending approval. Please wait for admin approval.';
+    }
   }
 }

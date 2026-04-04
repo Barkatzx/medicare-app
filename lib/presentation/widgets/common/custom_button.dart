@@ -26,10 +26,11 @@ class CustomButton extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               side: BorderSide(
-                color: backgroundColor ?? Theme.of(context).primaryColor,
+                color: backgroundColor ?? Colors.black,
+                width: 1.5,
               ),
             ),
             child: _buildChild(context),
@@ -37,12 +38,13 @@ class CustomButton extends StatelessWidget {
         : ElevatedButton(
             onPressed: isLoading ? null : onPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  backgroundColor ?? Theme.of(context).primaryColor,
+              backgroundColor: backgroundColor ?? Colors.black,
+              foregroundColor: textColor ?? Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 0,
             ),
             child: _buildChild(context),
           );
@@ -58,7 +60,7 @@ class CustomButton extends StatelessWidget {
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(
-            isOutlined ? Theme.of(context).primaryColor : Colors.white,
+            isOutlined ? Colors.black : Colors.white,
           ),
         ),
       );
@@ -66,13 +68,7 @@ class CustomButton extends StatelessWidget {
 
     return Text(
       text,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: isOutlined
-            ? (textColor ?? Theme.of(context).primaryColor)
-            : (textColor ?? Colors.white),
-      ),
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
     );
   }
 }

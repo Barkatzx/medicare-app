@@ -14,6 +14,8 @@ abstract class AuthRepository {
     required String password,
   });
 
+  Future<UserEntity> verifyAuth();
+
   Future<void> logout();
 
   Future<bool> isLoggedIn();
@@ -23,4 +25,8 @@ abstract class AuthRepository {
   Future<void> saveToken(String token);
 
   Future<void> clearToken();
+
+  Future<void> saveUser(UserEntity user);
+
+  Future<UserEntity?> getUser();
 }

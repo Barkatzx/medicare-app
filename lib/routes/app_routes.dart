@@ -6,6 +6,7 @@ class AppRoutes {
 
   // Main Home
   static const String home = '/';
+  static const String trending = '/trending';
   static const String productDetail = '/product-detail';
   static const String categories = '/categories';
   static const String categoryProducts = '/category-products';

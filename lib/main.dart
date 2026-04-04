@@ -7,6 +7,7 @@ import 'data/datasources/local/shared_prefs_helper.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'domain/usecases/auth/login_usecase.dart';
 import 'domain/usecases/auth/register_usecase.dart';
+import 'domain/usecases/auth/verify_auth_usecase.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_generator.dart';
@@ -22,20 +23,26 @@ void main() async {
   final client = http.Client();
 
   // Initialize Repository
+  // In main.dart, update this line:
   final AuthRepository authRepository = AuthRepositoryImpl(
     client: client,
-    prefsHelper: sharedPrefsHelper,
+    sharedPreferencesHelper: sharedPrefsHelper, // Changed from prefsHelper
   );
 
   // Initialize Use Cases
   final loginUseCase = LoginUseCase(authRepository);
   final registerUseCase = RegisterUseCase(authRepository);
+  final verifyAuthUseCase = VerifyAuthUseCase(authRepository);
 
-  // Initialize Providers
+  // Initialize Auth Provider
   final authProvider = AuthProvider(
     loginUseCase: loginUseCase,
     registerUseCase: registerUseCase,
+    verifyAuthUseCase: verifyAuthUseCase,
   );
+
+  // Initialize auth state
+  await authProvider.initialize();
 
   runApp(MyApp(authProvider: authProvider));
 }
@@ -48,18 +55,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: authProvider),
-        // Add other providers here
-      ],
+      providers: [ChangeNotifierProvider.value(value: authProvider)],
       child: MaterialApp(
-        title: 'E-Commerce App',
+        title: 'MediCare App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        initialRoute: AppRoutes.login,
+        initialRoute: authProvider.isLoggedIn && authProvider.isCustomer
+            ? AppRoutes.home
+            : AppRoutes.login,
         onGenerateRoute: RouteGenerator.generateRoute,
       ),
     );

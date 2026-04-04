@@ -14,11 +14,22 @@ class AuthResponseModel {
   });
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
-    return AuthResponseModel(
-      success: json['success'] ?? false,
-      message: json['message'] ?? '',
-      token: json['token'],
-      user: json['user'] != null ? UserEntity.fromJson(json['user']) : null,
-    );
+    // Handle both response formats
+    if (json.containsKey('data')) {
+      final data = json['data'];
+      return AuthResponseModel(
+        success: true,
+        message: data['message'] ?? json['message'] ?? '',
+        token: data['token'],
+        user: data['user'] != null ? UserEntity.fromJson(data['user']) : null,
+      );
+    } else {
+      return AuthResponseModel(
+        success: json['success'] ?? false,
+        message: json['message'] ?? '',
+        token: json['token'],
+        user: json['user'] != null ? UserEntity.fromJson(json['user']) : null,
+      );
+    }
   }
 }
