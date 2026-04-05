@@ -169,6 +169,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 
                 // Use ListView.builder for single column (one row per product)
                 // In the ListView.builder, update the ProductCard usage
+                // In the ListView.builder, update the ProductCard usage
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: productProvider.products.length,
@@ -176,15 +177,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                     final product = productProvider.products[index];
                     return ProductCard(
                       product: product,
-                      onAddToCart: () {
-                        // Add to cart logic
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product.name} added to cart'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      },
+                      // Remove onAddToCart parameter - it's now handled inside ProductCard
                     );
                   },
                 );

@@ -9,21 +9,30 @@ class CartProvider extends ChangeNotifier {
 
   CartEntity? _cart;
   bool _isLoading = false;
+  bool _isUpdating = false;
   int _cartItemCount = 0;
 
   CartEntity? get cart => _cart;
   bool get isLoading => _isLoading;
+  bool get isUpdating => _isUpdating;
   int get cartItemCount => _cartItemCount;
   List<CartItemEntity> get cartItems => _cart?.items ?? [];
-  double get totalAmount => _cart?.totalAmount ?? 0.0;
+  double get subtotal => _cart?.subtotal ?? 0.0;
+  double get total => _cart?.total ?? 0.0;
+  double get totalSavings => _cart?.totalSavings ?? 0.0;
+
+  Function(String message, {bool isError})? onShowMessage;
 
   Future<void> loadCart() async {
+    if (_isLoading) return;
+
     _isLoading = true;
     notifyListeners();
 
     try {
       _cart = await cartRepository.getCart();
-      _cartItemCount = _cart?.totalItems ?? 0;
+      _cartItemCount = _cart?.itemCount ?? 0;
+      print('Cart loaded: ${_cart?.items.length} items');
     } catch (e) {
       print('Error loading cart: $e');
       _cart = null;
@@ -44,51 +53,231 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addToCart(String productId, int quantity) async {
+  Future<bool> addToCart(String productId, int quantity) async {
     try {
+      print('Adding to cart: productId=$productId, quantity=$quantity');
+
+      // Call API to add to cart
       await cartRepository.addToCart(productId, quantity);
-      await loadCartCount();
-      await loadCart();
-      notifyListeners();
+
+      // Reload cart to get updated items
+      loadCart();
+
+      // Show success message
+      onShowMessage?.call('Product added to cart', isError: false);
+
+      return true;
     } catch (e) {
       print('Error adding to cart: $e');
-      rethrow;
+      onShowMessage?.call('Failed to add product to cart', isError: true);
+      return false;
     }
   }
 
-  Future<void> updateQuantity(String itemId, int quantity) async {
+  // Optimistic update for quantity - NO LOADING SPINNER
+  Future<void> updateQuantity(String itemId, int newQuantity) async {
+    if (_isUpdating) return;
+
+    // Find the item index
+    final itemIndex =
+        _cart?.items.indexWhere((item) => item.id == itemId) ?? -1;
+    if (itemIndex == -1) return;
+
+    // Create updated item
+    final oldItem = _cart!.items[itemIndex];
+    final updatedItem = CartItemEntity(
+      id: oldItem.id,
+      quantity: newQuantity,
+      product: oldItem.product,
+      itemTotal: oldItem.product.finalPrice * newQuantity,
+      itemSavings: oldItem.product.discountedPrice != null
+          ? (oldItem.product.price - oldItem.product.finalPrice) * newQuantity
+          : 0,
+    );
+
+    // Update local cart immediately (optimistic update)
+    final updatedItems = List<CartItemEntity>.from(_cart!.items);
+    updatedItems[itemIndex] = updatedItem;
+
+    // Recalculate totals
+    final newSubtotal = updatedItems.fold(
+      0.0,
+      (sum, item) => sum + item.itemTotal,
+    );
+    final newTotalSavings = updatedItems.fold(
+      0.0,
+      (sum, item) => sum + item.itemSavings,
+    );
+    final newTotal = newSubtotal - newTotalSavings;
+    final newItemCount = updatedItems.fold(
+      0,
+      (sum, item) => sum + item.quantity,
+    );
+
+    final updatedCart = CartEntity(
+      items: updatedItems,
+      subtotal: newSubtotal,
+      totalSavings: newTotalSavings,
+      total: newTotal,
+      itemCount: newItemCount,
+    );
+
+    // Update UI immediately - NO LOADING SPINNER
+    _cart = updatedCart;
+    _cartItemCount = newItemCount;
+    notifyListeners();
+
+    // Send API request in background - NO UI BLOCKING
+    _isUpdating = true;
+
     try {
-      await cartRepository.updateCartItem(itemId, quantity);
-      await loadCartCount();
-      await loadCart();
-      notifyListeners();
+      await cartRepository.updateCartItem(itemId, newQuantity);
+      // Don't reload cart - just update count in background
+      _cartItemCount = newItemCount;
+      onShowMessage?.call('Quantity updated', isError: false);
     } catch (e) {
-      print('Error updating quantity: $e');
-      rethrow;
+      // Revert to old cart
+      final revertedItems = List<CartItemEntity>.from(updatedItems);
+      revertedItems[itemIndex] = oldItem;
+
+      final revertedSubtotal = revertedItems.fold(
+        0.0,
+        (sum, item) => sum + item.itemTotal,
+      );
+      final revertedTotalSavings = revertedItems.fold(
+        0.0,
+        (sum, item) => sum + item.itemSavings,
+      );
+      final revertedTotal = revertedSubtotal - revertedTotalSavings;
+      final revertedItemCount = revertedItems.fold(
+        0,
+        (sum, item) => sum + item.quantity,
+      );
+
+      _cart = CartEntity(
+        items: revertedItems,
+        subtotal: revertedSubtotal,
+        totalSavings: revertedTotalSavings,
+        total: revertedTotal,
+        itemCount: revertedItemCount,
+      );
+      _cartItemCount = revertedItemCount;
+      notifyListeners();
+
+      onShowMessage?.call('Failed to update quantity', isError: true);
+    } finally {
+      _isUpdating = false;
     }
   }
 
   Future<void> removeFromCart(String itemId) async {
+    if (_isUpdating) return;
+
+    // Find the item
+    final itemIndex =
+        _cart?.items.indexWhere((item) => item.id == itemId) ?? -1;
+    if (itemIndex == -1) return;
+
+    final removedItem = _cart!.items[itemIndex];
+
+    // Optimistic remove
+    final updatedItems = List<CartItemEntity>.from(_cart!.items);
+    updatedItems.removeAt(itemIndex);
+
+    final newSubtotal = updatedItems.fold(
+      0.0,
+      (sum, item) => sum + item.itemTotal,
+    );
+    final newTotalSavings = updatedItems.fold(
+      0.0,
+      (sum, item) => sum + item.itemSavings,
+    );
+    final newTotal = newSubtotal - newTotalSavings;
+    final newItemCount = updatedItems.fold(
+      0,
+      (sum, item) => sum + item.quantity,
+    );
+
+    _cart = CartEntity(
+      items: updatedItems,
+      subtotal: newSubtotal,
+      totalSavings: newTotalSavings,
+      total: newTotal,
+      itemCount: newItemCount,
+    );
+    _cartItemCount = newItemCount;
+    notifyListeners();
+
+    // Send API request
+    _isUpdating = true;
+
     try {
       await cartRepository.removeFromCart(itemId);
-      await loadCartCount();
-      await loadCart();
-      notifyListeners();
+      onShowMessage?.call('Item removed from cart', isError: false);
     } catch (e) {
-      print('Error removing from cart: $e');
-      rethrow;
+      // Revert on failure
+      updatedItems.insert(itemIndex, removedItem);
+      final revertedSubtotal = updatedItems.fold(
+        0.0,
+        (sum, item) => sum + item.itemTotal,
+      );
+      final revertedTotalSavings = updatedItems.fold(
+        0.0,
+        (sum, item) => sum + item.itemSavings,
+      );
+      final revertedTotal = revertedSubtotal - revertedTotalSavings;
+      final revertedItemCount = updatedItems.fold(
+        0,
+        (sum, item) => sum + item.quantity,
+      );
+
+      _cart = CartEntity(
+        items: updatedItems,
+        subtotal: revertedSubtotal,
+        totalSavings: revertedTotalSavings,
+        total: revertedTotal,
+        itemCount: revertedItemCount,
+      );
+      _cartItemCount = revertedItemCount;
+      notifyListeners();
+
+      onShowMessage?.call('Failed to remove item', isError: true);
+    } finally {
+      _isUpdating = false;
     }
   }
 
   Future<void> clearCart() async {
+    if (_isUpdating) return;
+
+    // Save old cart for rollback
+    final oldCart = _cart;
+
+    // Optimistic clear
+    _cart = CartEntity(
+      items: [],
+      subtotal: 0,
+      totalSavings: 0,
+      total: 0,
+      itemCount: 0,
+    );
+    _cartItemCount = 0;
+    notifyListeners();
+
+    _isUpdating = true;
+
     try {
       await cartRepository.clearCart();
-      await loadCartCount();
-      await loadCart();
-      notifyListeners();
+      onShowMessage?.call('Cart cleared successfully', isError: false);
     } catch (e) {
-      print('Error clearing cart: $e');
-      rethrow;
+      // Revert on failure
+      _cart = oldCart;
+      _cartItemCount = oldCart?.itemCount ?? 0;
+      notifyListeners();
+
+      onShowMessage?.call('Failed to clear cart', isError: true);
+    } finally {
+      _isUpdating = false;
     }
   }
 }

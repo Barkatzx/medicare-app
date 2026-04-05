@@ -19,6 +19,8 @@ class CartRepositoryImpl implements CartRepository {
         throw Exception('User not authenticated');
       }
 
+      print('Getting cart from: ${ApiConstants.cart}');
+
       final response = await client
           .get(
             Uri.parse(ApiConstants.cart),
@@ -31,21 +33,18 @@ class CartRepositoryImpl implements CartRepository {
             },
           );
 
+      print('Cart response status: ${response.statusCode}');
+      print('Cart response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
+        print('Parsed response: $responseData');
 
-        if (responseData['data'] != null) {
+        // Check if response has data wrapper
+        if (responseData['data'] != null && responseData['success'] == true) {
           return CartEntity.fromJson(responseData['data']);
         } else {
-          return CartEntity(
-            id: '',
-            userId: '',
-            items: [],
-            totalAmount: 0,
-            totalItems: 0,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          );
+          return CartEntity.fromJson(responseData);
         }
       } else {
         throw Exception('Failed to load cart');
@@ -66,7 +65,7 @@ class CartRepositoryImpl implements CartRepository {
 
       final response = await client
           .get(
-            Uri.parse(ApiConstants.cartCount),
+            Uri.parse(ApiConstants.cart),
             headers: ApiConstants.getHeaders(token: token),
           )
           .timeout(
@@ -78,9 +77,8 @@ class CartRepositoryImpl implements CartRepository {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-
         if (responseData['data'] != null) {
-          return responseData['data']['count'] ?? 0;
+          return responseData['data']['itemCount'] ?? 0;
         }
         return 0;
       } else {
@@ -102,6 +100,9 @@ class CartRepositoryImpl implements CartRepository {
 
       final requestBody = {'productId': productId, 'quantity': quantity};
 
+      print('Adding to cart - URL: ${ApiConstants.addToCart}');
+      print('Request body: $requestBody');
+
       final response = await client
           .post(
             Uri.parse(ApiConstants.addToCart),
@@ -115,7 +116,12 @@ class CartRepositoryImpl implements CartRepository {
             },
           );
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      print('Add to cart response status: ${response.statusCode}');
+      print('Add to cart response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      } else {
         final errorBody = json.decode(response.body);
         throw Exception(errorBody['message'] ?? 'Failed to add to cart');
       }
