@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicare_app/presentation/widgets/common/custom_theme.dart';
 import 'package:provider/provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../providers/auth_provider.dart';
@@ -6,7 +7,7 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_textfield.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -49,17 +50,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Title
                 Text(
                   'Create Account',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: CustomTextStyle.heading1,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Sign up to get started',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                  style: CustomTextStyle.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
@@ -68,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 CustomTextField(
                   controller: _nameController,
                   label: 'Full Name',
+                  hintText: 'Enter your full name',
                   prefixIcon: Icons.person,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -85,6 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 CustomTextField(
                   controller: _emailController,
                   label: 'Email',
+                  hintText: 'Enter your email address',
                   prefixIcon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -103,6 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 CustomTextField(
                   controller: _phoneController,
                   label: 'Phone Number',
+                  hintText: 'Enter your phone number',
                   prefixIcon: Icons.phone,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
@@ -121,6 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 CustomTextField(
                   controller: _passwordController,
                   label: 'Password',
+                  hintText: 'Enter your password',
                   prefixIcon: Icons.lock,
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -151,6 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 CustomTextField(
                   controller: _confirmPasswordController,
                   label: 'Confirm Password',
+                  hintText: 'Re-enter your password',
                   prefixIcon: Icons.lock_outline,
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -229,7 +231,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                       child: const Text(
                         'Login',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: CustomTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicare_app/presentation/widgets/common/custom_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -7,6 +8,8 @@ class CustomButton extends StatelessWidget {
   final bool isOutlined;
   final Color? backgroundColor;
   final Color? textColor;
+  final double? width;
+  final double? height;
 
   const CustomButton({
     Key? key,
@@ -16,59 +19,57 @@ class CustomButton extends StatelessWidget {
     this.isOutlined = false,
     this.backgroundColor,
     this.textColor,
+    this.width,
+    this.height,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final button = isOutlined
-        ? OutlinedButton(
-            onPressed: isLoading ? null : onPressed,
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              side: BorderSide(
-                color: backgroundColor ?? Colors.black,
-                width: 1.5,
-              ),
-            ),
-            child: _buildChild(context),
-          )
-        : ElevatedButton(
-            onPressed: isLoading ? null : onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: backgroundColor ?? Colors.black,
-              foregroundColor: textColor ?? Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: _buildChild(context),
-          );
-
-    return SizedBox(width: double.infinity, child: button);
-  }
-
-  Widget _buildChild(BuildContext context) {
-    if (isLoading) {
-      return SizedBox(
-        height: 20,
-        width: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            isOutlined ? Colors.black : Colors.white,
-          ),
+    return GestureDetector(
+      onTap: isLoading ? null : onPressed,
+      child: Container(
+        width: width ?? double.infinity,
+        height: height ?? 48,
+        decoration: BoxDecoration(
+          color: isOutlined
+              ? Colors.transparent
+              : (backgroundColor ?? CustomTheme.primaryColor),
+          borderRadius: BorderRadius.circular(CustomTheme.radiusMD),
+          border: isOutlined
+              ? Border.all(
+                  color: backgroundColor ?? CustomTheme.primaryColor,
+                  width: 1.5,
+                )
+              : null,
         ),
-      );
-    }
-
-    return Text(
-      text,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        child: Center(
+          child: isLoading
+              ? SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isOutlined
+                          ? (backgroundColor ?? CustomTheme.primaryColor)
+                          : (textColor ?? Colors.white),
+                    ),
+                  ),
+                )
+              : Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: CustomTheme.fontSizeMD,
+                    fontWeight: CustomTheme.fontWeightSemiBold,
+                    color: isOutlined
+                        ? (textColor ??
+                              backgroundColor ??
+                              CustomTheme.primaryColor)
+                        : (textColor ?? Colors.white),
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:medicare_app/presentation/providers/product_provider.dart';
 import 'package:medicare_app/presentation/screens/cart/cart_screen.dart';
-import 'package:medicare_app/presentation/screens/home/trending_screen.dart';
 import 'package:medicare_app/presentation/screens/profile/profile_screen.dart';
 import 'package:medicare_app/presentation/widgets/home/home_app_bar.dart';
+import 'package:medicare_app/presentation/widgets/home/product_card.dart';
+import 'package:provider/provider.dart';
+import 'trending_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -26,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -33,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.black,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -62,279 +66,182 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeContentScreen extends StatelessWidget {
-  const HomeContentScreen({Key? key}) : super(key: key);
+class HomeContentScreen extends StatefulWidget {
+  const HomeContentScreen({super.key});
+
+  @override
+  State<HomeContentScreen> createState() => _HomeContentScreenState();
+}
+
+class _HomeContentScreenState extends State<HomeContentScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final productProvider = Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      );
+      productProvider.loadProducts();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const HomeAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            _buildSearchBar(context),
-            const SizedBox(height: 20),
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(padding: const EdgeInsets.all(16), child: _buildSearchBar()),
+          // Products
+          // Replace the GridView.builder with ListView.builder
+          Expanded(
+            child: Consumer<ProductProvider>(
+              builder: (context, productProvider, child) {
+                if (productProvider.isLoading &&
+                    productProvider.products.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            // Categories Section
-            _buildSectionHeader('Categories', 'See All'),
-            const SizedBox(height: 12),
-            _buildCategoriesList(),
-            const SizedBox(height: 24),
+                if (productProvider.errorMessage != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.black,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(productProvider.errorMessage!),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            productProvider.loadProducts();
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-            // Featured Products
-            _buildSectionHeader('Featured Products', 'View All'),
-            const SizedBox(height: 12),
-            _buildFeaturedProducts(),
-            const SizedBox(height: 24),
+                if (productProvider.products.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.medical_services_outlined,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          productProvider.searchQuery.isEmpty
+                              ? 'No products available'
+                              : 'No products found for "${productProvider.searchQuery}"',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-            // Recommended for You
-            _buildSectionHeader('Recommended for You', 'View All'),
-            const SizedBox(height: 12),
-            _buildRecommendedProducts(),
-          ],
-        ),
+                // Use ListView.builder for single column (one row per product)
+                // In the ListView.builder, update the ProductCard usage
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: productProvider.products.length,
+                  itemBuilder: (context, index) {
+                    final product = productProvider.products[index];
+                    return ProductCard(
+                      product: product,
+                      onAddToCart: () {
+                        // Add to cart logic
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${product.name} added to cart'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        onChanged: (value) {
+          final productProvider = Provider.of<ProductProvider>(
+            context,
+            listen: false,
+          );
+          if (value.isEmpty) {
+            productProvider.clearSearch();
+          } else {
+            productProvider.searchProducts(value);
+          }
+        },
         decoration: InputDecoration(
-          hintText: 'Search products...',
+          hintText: 'Napa Extra...',
           prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.grey),
-            onPressed: () {
-              // Open filter dialog
-            },
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  onPressed: () {
+                    _searchController.clear();
+                    final productProvider = Provider.of<ProductProvider>(
+                      context,
+                      listen: false,
+                    );
+                    productProvider.clearSearch();
+                    _searchFocusNode.unfocus();
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
           ),
-          border: InputBorder.none,
+          filled: true,
+          fillColor: Colors.grey.shade50,
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
-        onTap: () {
-          Navigator.pushNamed(context, '/search');
-        },
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, String actionText) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        TextButton(onPressed: () {}, child: Text(actionText)),
-      ],
-    );
-  }
-
-  Widget _buildCategoriesList() {
-    final categories = ['Electronics', 'Fashion', 'Home', 'Books', 'Sports'];
-
-    return SizedBox(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 80,
-            margin: const EdgeInsets.only(right: 12),
-            child: Column(
-              children: [
-                Container(
-                  height: 60,
-                  width: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _getCategoryIcon(categories[index]),
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  categories[index],
-                  style: const TextStyle(fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Electronics':
-        return Icons.devices;
-      case 'Fashion':
-        return Icons.checkroom;
-      case 'Home':
-        return Icons.home;
-      case 'Books':
-        return Icons.book;
-      case 'Sports':
-        return Icons.sports_soccer;
-      default:
-        return Icons.category;
-    }
-  }
-
-  Widget _buildFeaturedProducts() {
-    return SizedBox(
-      height: 220,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 160,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade200,
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                  child: Container(
-                    height: 120,
-                    color: Colors.grey.shade300,
-                    child: const Center(
-                      child: Icon(Icons.image, size: 40, color: Colors.grey),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Product Name',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$99.99',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildRecommendedProducts() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.7,
-      ),
-      itemCount: 4,
-      itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade200,
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-                child: Container(
-                  height: 120,
-                  color: Colors.grey.shade300,
-                  child: const Center(
-                    child: Icon(Icons.image, size: 40, color: Colors.grey),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Product Name',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '\$99.99',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

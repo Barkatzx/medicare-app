@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TrendingScreen extends StatelessWidget {
-  const TrendingScreen({Key? key}) : super(key: key);
+  const TrendingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

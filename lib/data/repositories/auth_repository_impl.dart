@@ -26,10 +26,6 @@ class AuthRepositoryImpl implements AuthRepository {
         'password': password,
       };
 
-      print('Logging in with phone: ${requestBody['phone_number']}');
-      print('Login URL: ${ApiConstants.login}');
-      print('Request body: $requestBody');
-
       final response = await client
           .post(
             Uri.parse(ApiConstants.login),
@@ -44,9 +40,6 @@ class AuthRepositoryImpl implements AuthRepository {
               );
             },
           );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = json.decode(response.body);
@@ -88,11 +81,11 @@ class AuthRepositoryImpl implements AuthRepository {
         }
       } else {
         final errorBody = json.decode(response.body);
-        throw Exception(errorBody['message'] ?? 'Login failed');
+        throw (errorBody['message'] ??
+            'Login failed. Check your password and try again.');
       }
     } catch (e) {
-      print('Login error: $e');
-      throw Exception('Login Error: $e');
+      throw ('$e');
     }
   }
 
@@ -111,10 +104,6 @@ class AuthRepositoryImpl implements AuthRepository {
         'password': password,
       };
 
-      print('=== REGISTRATION DEBUG ===');
-      print('URL: ${ApiConstants.register}');
-      print('Request Body: $requestBody');
-
       final response = await client
           .post(
             Uri.parse(ApiConstants.register),
@@ -129,9 +118,6 @@ class AuthRepositoryImpl implements AuthRepository {
               );
             },
           );
-
-      print('Response Status: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = json.decode(response.body);
@@ -207,8 +193,6 @@ class AuthRepositoryImpl implements AuthRepository {
             },
           );
 
-      print('Verify auth response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
@@ -244,7 +228,6 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('Session expired. Please login again.');
       }
     } catch (e) {
-      print('Verification error: $e');
       throw Exception('Verification failed: $e');
     }
   }

@@ -1,7 +1,8 @@
 name: medicare_app
 description: "A new Flutter project."
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
+publish_to: "none"
 version: 1.0.0+1
+
 environment:
   sdk: ^3.11.4
 
@@ -31,5 +32,25 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: Lufga
+      fonts:
+        - asset: assets/fonts/LufgaThin.ttf
+          weight: 100
+        - asset: assets/fonts/LufgaLight.ttf
+          weight: 300
+        - asset: assets/fonts/LufgaRegular.ttf
+          weight: 400
+        - asset: assets/fonts/LufgaMedium.ttf
+          weight: 500
+        - asset: assets/fonts/LufgaSemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/LufgaBold.ttf
+          weight: 700

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicare_app/presentation/screens/products/product_detail_screen.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
 import '../presentation/screens/auth/forgot_password_screen.dart';
@@ -29,6 +30,11 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case '/pending-approval':
         return MaterialPageRoute(builder: (_) => const PendingApprovalScreen());
+      case AppRoutes.productDetail:
+        return MaterialPageRoute(
+          builder: (_) => const ProductDetailScreen(),
+          settings: settings,
+        );
 
       // Protected Routes
       case AppRoutes.home:

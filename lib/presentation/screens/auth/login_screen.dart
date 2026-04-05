@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicare_app/presentation/widgets/common/custom_theme.dart';
 import 'package:provider/provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../providers/auth_provider.dart';
@@ -16,7 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-
   bool _isPasswordVisible = false;
 
   @override
@@ -29,163 +29,117 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: CustomTheme.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(CustomTheme.spacingXXL),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 50),
-                // Logo/Title
+                SizedBox(height: CustomTheme.spacingXXL * 2),
                 Text(
                   'Welcome Back!',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                    letterSpacing: -0.5,
-                  ),
+                  style: CustomTextStyle.heading1,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: CustomTheme.spacingSM),
                 Text(
                   'Login to your account',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: CustomTextStyle.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48),
-
-                // Phone Number Field
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: CustomTextField(
-                    controller: _phoneController,
-                    label: 'Phone Number',
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    fillColor: Colors.white,
-                    focusedBorderColor: Colors.black,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your phone number';
-                      }
-                      if (value.length < 11) {
-                        return 'Please enter a valid phone number';
-                      }
-                      return null;
-                    },
-                  ),
+                SizedBox(height: CustomTheme.spacingXXL * 2),
+                CustomTextField(
+                  controller: _phoneController,
+                  label: 'Phone Number',
+                  hintText: 'Enter your phone number',
+                  prefixIcon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    if (value.length < 11) {
+                      return 'Please enter a valid phone number';
+                    }
+                    return null;
+                  },
                 ),
-                const SizedBox(height: 16),
-
+                SizedBox(height: CustomTheme.spacingLG), // Removed const
                 // Password Field
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: CustomTextField(
-                    controller: _passwordController,
-                    label: 'Password',
-                    prefixIcon: Icons.lock_outline,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey[400],
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
+                CustomTextField(
+                  controller: _passwordController,
+                  label: 'Password',
+                  hintText: 'Enter your password',
+                  prefixIcon: Icons.lock_outline,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: CustomTheme.textTertiary,
                     ),
-                    obscureText: !_isPasswordVisible,
-                    fillColor: Colors.white,
-                    focusedBorderColor: Colors.black,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
                     },
                   ),
+                  obscureText: !_isPasswordVisible,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
                 ),
-                const SizedBox(height: 12),
-
+                SizedBox(height: CustomTheme.spacingSM), // Removed const
                 // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
+                  child: GestureDetector(
+                    onTap: () {
                       Navigator.pushNamed(context, AppRoutes.forgotPassword);
                     },
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.grey[600],
-                    ),
-                    child: const Text(
+                    child: Text(
                       'Forgot Password?',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: CustomTextStyle.bodySmall.copyWith(
+                        color: CustomTheme.primaryColor,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
-
+                SizedBox(height: CustomTheme.spacingXXL), // Removed const
                 // Error Message
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
                     if (authProvider.errorMessage != null) {
                       return Container(
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: EdgeInsets.all(CustomTheme.spacingMD),
+                        margin: EdgeInsets.only(bottom: CustomTheme.spacingLG),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.red.shade200),
+                          color: CustomTheme.errorColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(
+                            CustomTheme.radiusMD,
+                          ),
+                          border: Border.all(
+                            color: CustomTheme.errorColor.withOpacity(0.3),
+                          ),
                         ),
                         child: Row(
                           children: [
                             Icon(
                               Icons.error_outline,
-                              color: Colors.red.shade400,
+                              color: CustomTheme.errorColor,
                               size: 20,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: CustomTheme.spacingMD),
                             Expanded(
                               child: Text(
                                 authProvider.errorMessage!,
-                                style: TextStyle(
-                                  color: Colors.red.shade700,
-                                  fontSize: 14,
-                                ),
+                                style: TextStyle(color: CustomTheme.errorColor),
                               ),
                             ),
                           ],
@@ -199,51 +153,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Login Button
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).primaryColor.withOpacity(0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: CustomButton(
-                        text: 'Login',
-                        isLoading: authProvider.isLoading,
-                        onPressed: _handleLogin,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                      ),
+                    return CustomButton(
+                      text: 'Login',
+                      isLoading: authProvider.isLoading,
+                      onPressed: _handleLogin,
                     );
                   },
                 ),
-                const SizedBox(height: 24),
-
+                SizedBox(height: CustomTheme.spacingLG), // Removed const
                 // Register Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      style: CustomTextStyle.bodySmall,
                     ),
-                    TextButton(
-                      onPressed: () {
+                    GestureDetector(
+                      onTap: () {
                         Navigator.pushNamed(context, AppRoutes.register);
                       },
-                      style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(context).primaryColor,
-                      ),
-                      child: const Text(
+                      child: Text(
                         'Create Account',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                        style: CustomTextStyle.bodySmall.copyWith(
+                          color: CustomTheme.primaryColor,
+                          fontWeight: CustomTheme.fontWeightBold,
                         ),
                       ),
                     ),
@@ -261,7 +195,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      // Show loading dialog
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -270,20 +203,17 @@ class _LoginScreenState extends State<LoginScreen> {
           elevation: 0,
           child: Center(
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(CustomTheme.spacingXL),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                color: CustomTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(CustomTheme.radiusXL),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Logging in...',
-                    style: TextStyle(color: Colors.black87),
-                  ),
+                  const CircularProgressIndicator(),
+                  SizedBox(height: CustomTheme.spacingMD),
+                  const Text('Logging in...'),
                 ],
               ),
             ),
@@ -297,11 +227,9 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
-      // Dismiss loading dialog
       Navigator.pop(context);
 
       if (success && mounted) {
-        // Replace the entire navigation stack with home
         Navigator.pushNamedAndRemoveUntil(
           context,
           AppRoutes.home,
@@ -316,10 +244,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.errorMessage!),
-            backgroundColor: Colors.red.shade600,
+            backgroundColor: CustomTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(CustomTheme.radiusMD),
             ),
           ),
         );
@@ -332,55 +260,46 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(CustomTheme.radiusXL),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(CustomTheme.spacingXXL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(CustomTheme.spacingLG),
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
+                  color: CustomTheme.warningColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.pending_actions,
                   size: 50,
-                  color: Colors.orange.shade700,
+                  color: CustomTheme.warningColor,
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: CustomTheme.spacingXL),
+              Text(
                 'Account Pending Approval',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: CustomTextStyle.heading2,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: CustomTheme.spacingMD),
               Text(
                 message,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                style: CustomTextStyle.bodyMedium,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Clear the form
-                    _phoneController.clear();
-                    _passwordController.clear();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange.shade700,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('OK', style: TextStyle(fontSize: 16)),
-                ),
+              SizedBox(height: CustomTheme.spacingXXL),
+              CustomButton(
+                text: 'OK',
+                onPressed: () {
+                  Navigator.pop(context);
+                  _phoneController.clear();
+                  _passwordController.clear();
+                },
               ),
             ],
           ),
