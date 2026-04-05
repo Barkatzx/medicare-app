@@ -1,22 +1,9 @@
-import 'dart:io';
-
 class ApiConstants {
   ApiConstants._();
 
-  static String get baseUrl {
-    // For Android Emulator
-    if (Platform.isAndroid) {
-      // Check if running on emulator or physical device
-      // Physical devices need the computer's IP address
-      return 'http://192.168.0.111:3000'; // YOUR MAC'S IP ADDRESS
-    }
-    // For iOS Simulator
-    else if (Platform.isIOS) {
-      return 'http://localhost:3000';
-    } else {
-      return 'http://192.168.0.111:3000';
-    }
-  }
+  // ✅ Single Railway URL for all platforms since it's deployed
+  static const String baseUrl =
+      'https://medicare-server-production.up.railway.app';
 
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -72,10 +59,10 @@ class ApiConstants {
       '$baseUrl/api/orders/$orderId/cancel';
 
   // ==================== HTTP METHODS ====================
-  static const String get = 'GET';
-  static const String post = 'POST';
-  static const String put = 'PUT';
-  static const String delete = 'DELETE';
+  static const String methodGet = 'GET';
+  static const String methodPost = 'POST';
+  static const String methodPut = 'PUT';
+  static const String methodDelete = 'DELETE';
 
   // ==================== HEADERS ====================
   static Map<String, String> getHeaders({String? token}) {
