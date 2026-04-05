@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medicare_app/presentation/providers/product_provider.dart';
 import 'package:medicare_app/presentation/screens/cart/cart_screen.dart';
+import 'package:medicare_app/presentation/screens/home/categories_screen.dart';
 import 'package:medicare_app/presentation/screens/profile/profile_screen.dart';
 import 'package:medicare_app/presentation/widgets/home/home_app_bar.dart';
 import 'package:medicare_app/presentation/widgets/home/product_card.dart';
@@ -20,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const HomeContentScreen(),
     const TrendingScreen(),
+    const CategoriesScreen(),
     const CartScreen(),
     const ProfileScreen(),
   ];
@@ -49,6 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.trending_up_outlined),
             activeIcon: Icon(Icons.trending_up),
             label: 'Trending',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category_outlined),
+            activeIcon: Icon(Icons.category),
+            label: 'Categories',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart_outlined),

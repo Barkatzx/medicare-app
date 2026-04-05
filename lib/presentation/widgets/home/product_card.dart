@@ -19,25 +19,24 @@ class ProductCard extends StatelessWidget {
         Navigator.pushNamed(context, '/product-detail', arguments: product.id);
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: CustomTheme.spacingMD),
+        margin: EdgeInsets.only(bottom: CustomTheme.spacingSM),
         decoration: BoxDecoration(
           color: CustomTheme.surfaceColor,
-          borderRadius: BorderRadius.circular(CustomTheme.radiusLG),
-          boxShadow: CustomTheme.boxShadowLight,
+          borderRadius: BorderRadius.circular(CustomTheme.radiusSM),
         ),
         child: Padding(
-          padding: EdgeInsets.all(CustomTheme.spacingMD),
+          padding: EdgeInsets.all(CustomTheme.spacingSM),
           child: Row(
             children: [
               // First Flex Box - Product Image
               Expanded(
                 flex: 2,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(CustomTheme.radiusMD),
+                  borderRadius: BorderRadius.circular(CustomTheme.radiusSM),
                   child: product.images.isNotEmpty
                       ? Image.network(
                           product.images.first.url,
-                          height: 100,
+                          height: 80,
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
@@ -53,7 +52,7 @@ class ProductCard extends StatelessWidget {
                           },
                         )
                       : Container(
-                          height: 100,
+                          height: 60,
                           color: const Color(0xFFF2F2F2),
                           child: const Icon(
                             Icons.medical_services,

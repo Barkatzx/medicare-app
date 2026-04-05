@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicare_app/data/repositories/auth_repository.dart';
+import 'package:medicare_app/data/repositories/cart_repository.dart';
+import 'package:medicare_app/data/repositories/cart_repository_impl.dart';
+import 'package:medicare_app/data/repositories/notification_repository.dart';
+import 'package:medicare_app/data/repositories/notification_repository_impl.dart';
 import 'package:medicare_app/data/repositories/product_repository.dart';
+import 'package:medicare_app/presentation/providers/cart_provider.dart';
+import 'package:medicare_app/presentation/providers/notification_provider.dart';
 import 'package:medicare_app/presentation/widgets/common/custom_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,6 +39,17 @@ void main() async {
     prefsHelper: sharedPrefsHelper,
   );
 
+  final CartRepository cartRepository = CartRepositoryImpl(
+    client: client,
+    prefsHelper: sharedPrefsHelper,
+  );
+
+  final NotificationRepository notificationRepository =
+      NotificationRepositoryImpl(
+        client: client,
+        prefsHelper: sharedPrefsHelper,
+      );
+
   final loginUseCase = LoginUseCase(authRepository);
   final registerUseCase = RegisterUseCase(authRepository);
   final verifyAuthUseCase = VerifyAuthUseCase(authRepository);
@@ -45,19 +62,36 @@ void main() async {
 
   final productProvider = ProductProvider(productRepository: productRepository);
 
+  final cartProvider = CartProvider(cartRepository: cartRepository);
+
+  final notificationProvider = NotificationProvider(
+    notificationRepository: notificationRepository,
+  );
+
   await authProvider.initialize();
 
-  runApp(MyApp(authProvider: authProvider, productProvider: productProvider));
+  runApp(
+    MyApp(
+      authProvider: authProvider,
+      productProvider: productProvider,
+      cartProvider: cartProvider,
+      notificationProvider: notificationProvider,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final AuthProvider authProvider;
   final ProductProvider productProvider;
+  final CartProvider cartProvider;
+  final NotificationProvider notificationProvider;
 
   const MyApp({
     Key? key,
     required this.authProvider,
     required this.productProvider,
+    required this.cartProvider,
+    required this.notificationProvider,
   }) : super(key: key);
 
   @override
@@ -66,6 +100,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider.value(value: productProvider),
+        ChangeNotifierProvider.value(value: cartProvider),
+        ChangeNotifierProvider.value(value: notificationProvider),
       ],
       child: MaterialApp(
         title: 'MediCare App',
@@ -75,7 +111,6 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: CustomTheme.backgroundColor,
           fontFamily: CustomTheme.primaryFontFamily,
           textTheme: const TextTheme(
-            // Remove CustomTextStyle and use direct TextStyle for constants
             displayLarge: TextStyle(
               fontFamily: 'Lufga',
               fontSize: 24,
