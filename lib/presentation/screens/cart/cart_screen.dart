@@ -279,6 +279,9 @@ class _CartScreenState extends ConsumerState<CartScreen>
   Widget _buildCartItem(CartItemEntity item, CartProvider provider) {
     final hasSavings = item.price > item.finalPrice;
     final savings = item.price - item.finalPrice;
+    final discountPercent = item.product.discountPercent > 0
+        ? item.product.discountPercent
+        : (item.price > 0 ? ((item.price - item.finalPrice) / item.price * 100).round() : 0);
 
     String? resolvedCategoryName;
 
@@ -345,7 +348,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
                           ),
                   ),
                 ),
-                if (hasSavings)
+                if (hasSavings && discountPercent > 0)
                   Positioned(
                     top: 0,
                     left: 0,
@@ -360,7 +363,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
                         ),
                       ),
                       child: Text(
-                        '-৳${savings.toStringAsFixed(0)}',
+                        '-$discountPercent%',
                         style: const TextStyle(
                           fontFamily: CustomTheme.primaryFontFamily,
                           fontSize: 8,
@@ -460,6 +463,24 @@ class _CartScreenState extends ConsumerState<CartScreen>
                             decoration: TextDecoration.lineThrough,
                             fontSize: 10,
                             color: CustomTheme.textTertiary,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: CustomTheme.successColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Your Save ${savings.toStringAsFixed(0)} ৳',
+                            style: const TextStyle(
+                              fontFamily: CustomTheme.primaryFontFamily,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
