@@ -214,7 +214,7 @@ class _ProductList extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Fetching products...',
+            'Loading products...',
             style: CustomTextStyle.bodySmall.copyWith(color: CustomTheme.textTertiary),
           ),
         ],

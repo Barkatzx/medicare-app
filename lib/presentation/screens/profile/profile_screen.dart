@@ -17,68 +17,139 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: CustomTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('My Profile', style: CustomTextStyle.heading3),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: false,
         elevation: 0,
+        backgroundColor: CustomTheme.backgroundColor,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
+        titleSpacing: 20,
+        title: Text(
+          'My Profile',
+          style: CustomTextStyle.heading2.copyWith(fontSize: 20),
+        ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildProfileCard(user),
-            const SizedBox(height: 24),
-            _buildMenuSection(context, ref),
-            const SizedBox(height: 40),
-          ],
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildProfileCard(user),
+              const SizedBox(height: 24),
+              _buildSectionLabel('General'),
+              const SizedBox(height: 10),
+              _buildMenuCard([
+                _MenuItemData(
+                  icon: Icons.person_outline_rounded,
+                  title: 'Edit Profile',
+                  subtitle: 'Update your personal info',
+                  iconColor: const Color(0xFF3B82F6),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.editProfile),
+                ),
+                _MenuItemData(
+                  icon: Icons.location_on_outlined,
+                  title: 'My Addresses',
+                  subtitle: 'Manage delivery locations',
+                  iconColor: const Color(0xFF10B981),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.addresses),
+                ),
+                _MenuItemData(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Order History',
+                  subtitle: 'View past orders',
+                  iconColor: const Color(0xFF8B5CF6),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.myOrders),
+                ),
+              ]),
+              const SizedBox(height: 20),
+              _buildSectionLabel('Preferences'),
+              const SizedBox(height: 10),
+              _buildMenuCard([
+                _MenuItemData(
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Notifications',
+                  subtitle: 'Alerts and updates',
+                  iconColor: const Color(0xFFF59E0B),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.notifications),
+                ),
+                _MenuItemData(
+                  icon: Icons.shield_outlined,
+                  title: 'Privacy & Security',
+                  subtitle: 'Password and account safety',
+                  iconColor: const Color(0xFF14B8A6),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.changePassword),
+                ),
+                _MenuItemData(
+                  icon: Icons.info_outline_rounded,
+                  title: 'About',
+                  subtitle: 'App version and info',
+                  iconColor: const Color(0xFF6366F1),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.about),
+                ),
+              ]),
+              const SizedBox(height: 20),
+              _buildLogoutButton(context, ref),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileCard(user) {
+  Widget _buildProfileCard(dynamic user) {
+    final initials = user?.name?.isNotEmpty == true
+        ? (user!.name as String)
+            .trim()
+            .split(' ')
+            .map((e) => e[0])
+            .take(2)
+            .join()
+            .toUpperCase()
+        : 'G';
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: CustomTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(CustomTheme.radiusXL),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          // Initials Image Box (Left)
+          // Avatar
           Container(
-            padding: const EdgeInsets.all(4),
+            width: 68,
+            height: 68,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: CustomTheme.primaryColor.withOpacity(0.07),
               border: Border.all(
-                color: CustomTheme.primaryColor.withOpacity(0.1),
-                width: 1,
+                color: CustomTheme.primaryColor.withOpacity(0.12),
+                width: 1.5,
               ),
             ),
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: CustomTheme.backgroundColor,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  user?.name?.isNotEmpty == true ? user!.name[0].toUpperCase() : 'G',
-                  style: CustomTextStyle.heading1.copyWith(
-                    color: CustomTheme.primaryColor,
-                    fontSize: 32,
-                    fontWeight: CustomTheme.fontWeightBold,
-                  ),
+            child: Center(
+              child: Text(
+                initials,
+                style: TextStyle(
+                  fontFamily: CustomTheme.primaryFontFamily,
+                  fontSize: 24,
+                  fontWeight: CustomTheme.fontWeightBold,
+                  color: CustomTheme.primaryColor,
+                  letterSpacing: -0.5,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 20),
-          // User Info (Right)
+          const SizedBox(width: 14),
+
+          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,39 +157,44 @@ class ProfileScreen extends ConsumerWidget {
                 Text(
                   user?.name ?? 'Guest User',
                   style: CustomTextStyle.heading3.copyWith(
-                    fontWeight: CustomTheme.fontWeightBold,
-                    letterSpacing: -0.5,
+                    fontSize: 16,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  user?.phoneNumber ?? 'Join our community',
-                  style: CustomTextStyle.bodyMedium.copyWith(
-                    color: CustomTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  user?.email ?? 'Join our community',
-                  style: CustomTextStyle.bodyMedium.copyWith(
-                    color: CustomTheme.textSecondary,
-                  ),
-                ),
-                if (user?.pharmacyName != null && user!.pharmacyName!.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                if (user?.phoneNumber != null)
+                  _buildInfoChip(
+                      Icons.phone_outlined, user!.phoneNumber),
+                if (user?.email != null) ...[
+                  const SizedBox(height: 3),
+                  _buildInfoChip(Icons.email_outlined, user!.email),
+                ],
+                if (user?.pharmacyName != null &&
+                    (user!.pharmacyName as String).isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: CustomTheme.primaryColor.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(CustomTheme.radiusSM),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(
-                      user!.pharmacyName!,
-                      style: CustomTextStyle.caption.copyWith(
-                        color: CustomTheme.primaryColor,
-                        fontWeight: CustomTheme.fontWeightSemiBold,
-                        fontSize: 11,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.local_pharmacy_outlined,
+                            size: 11, color: CustomTheme.primaryColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          user!.pharmacyName!,
+                          style: TextStyle(
+                            fontFamily: CustomTheme.primaryFontFamily,
+                            fontSize: 11,
+                            fontWeight: CustomTheme.fontWeightSemiBold,
+                            color: CustomTheme.primaryColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -130,148 +206,310 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMenuSection(BuildContext context, WidgetRef ref) {
+  Widget _buildInfoChip(IconData icon, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: CustomTheme.textTertiary),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            value,
+            style: CustomTextStyle.bodySmall.copyWith(
+              fontSize: 12,
+              color: CustomTheme.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('GENERAL SETTINGS', style: CustomTextStyle.bodySmall.copyWith(color: CustomTheme.textTertiary, letterSpacing: 1.2, fontWeight: CustomTheme.fontWeightBold)),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(CustomTheme.radiusLG),
-              
-            ),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  icon: Icons.person_outline_rounded,
-                  title: 'Edit Profile',
-                  color: Colors.blue,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.editProfile),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.location_on_outlined,
-                  title: 'My Addresses',
-                  color: Colors.green,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.addresses),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.history_rounded,
-                  title: 'Order History',
-                  color: Colors.purple,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.myOrders),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text('PREFERENCES', style: CustomTextStyle.bodySmall.copyWith(color: CustomTheme.textTertiary, letterSpacing: 1.2, fontWeight: CustomTheme.fontWeightBold)),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(CustomTheme.radiusLG),
-            ),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  icon: Icons.notifications_none_rounded,
-                  title: 'Notifications',
-                  color: Colors.amber,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.notifications),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.security_rounded,
-                  title: 'Privacy & Security',
-                  color: Colors.teal,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.changePassword),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.info_outline_rounded,
-                  title: 'About',
-                  color: Colors.indigo,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.about),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildLogoutButton(context, ref),
-        ],
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          fontFamily: CustomTheme.primaryFontFamily,
+          fontSize: 11,
+          fontWeight: CustomTheme.fontWeightBold,
+          color: CustomTheme.textTertiary,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
 
-  Widget _buildMenuItem({required IconData icon, required String title, required Color color, required VoidCallback onTap}) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-        child: Icon(icon, size: 20, color: color),
+  Widget _buildMenuCard(List<_MenuItemData> items) {
+    return Container(
+      decoration: BoxDecoration(
+        color: CustomTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
       ),
-      title: Text(title, style: CustomTextStyle.bodyMedium.copyWith(fontWeight: CustomTheme.fontWeightSemiBold)),
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: CustomTheme.textTertiary),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Column(
+        children: items.asMap().entries.map((entry) {
+          final i = entry.key;
+          final item = entry.value;
+          return Column(
+            children: [
+              _buildMenuItem(item),
+              if (i < items.length - 1)
+                Divider(
+                  height: 1,
+                  color: CustomTheme.borderLight,
+                  indent: 62,
+                  endIndent: 16,
+                ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(_MenuItemData item) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: item.onTap,
+        borderRadius: BorderRadius.circular(16),
+        splashColor: item.iconColor.withOpacity(0.04),
+        highlightColor: item.iconColor.withOpacity(0.02),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: item.iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(item.icon, size: 18, color: item.iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: CustomTextStyle.bodyMedium.copyWith(
+                        fontWeight: CustomTheme.fontWeightSemiBold,
+                        color: CustomTheme.textPrimary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      item.subtitle,
+                      style: CustomTextStyle.caption.copyWith(
+                        fontSize: 11,
+                        color: CustomTheme.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: CustomTheme.backgroundColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 12,
+                  color: CustomTheme.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
     return Container(
-      width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(CustomTheme.radiusLG),
+        color: CustomTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: ListTile(
-        onTap: () => _showLogoutDialog(context, ref),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.logout_rounded, size: 20, color: Colors.red),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => _showLogoutDialog(context, ref),
+          borderRadius: BorderRadius.circular(16),
+          splashColor: CustomTheme.errorColor.withOpacity(0.04),
+          highlightColor: CustomTheme.errorColor.withOpacity(0.02),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: CustomTheme.errorColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.logout_rounded,
+                      size: 18, color: CustomTheme.errorColor),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Logout',
+                        style: CustomTextStyle.bodyMedium.copyWith(
+                          fontWeight: CustomTheme.fontWeightSemiBold,
+                          color: CustomTheme.errorColor,
+                          fontSize: 13,
+                        ),
+                      ),
+                      Text(
+                        'Sign out of your account',
+                        style: CustomTextStyle.caption.copyWith(
+                          fontSize: 11,
+                          color: CustomTheme.errorColor.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: CustomTheme.errorColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: CustomTheme.errorColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        title: Text('Logout', style: CustomTextStyle.bodyMedium.copyWith(fontWeight: CustomTheme.fontWeightSemiBold, color: Colors.red)),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.red),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
-  }
-
-  Widget _buildDivider() {
-    return Divider(height: 1, color: CustomTheme.borderLight, indent: 64, endIndent: 16);
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CustomTheme.radiusXL)),
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout from your account?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: CustomTheme.textTertiary)),
+      builder: (context) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: CustomTheme.surfaceColor,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: CustomTheme.errorColor.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.logout_rounded,
+                    color: CustomTheme.errorColor, size: 24),
+              ),
+              const SizedBox(height: 16),
+              Text('Logout',
+                  style: CustomTextStyle.heading3.copyWith(fontSize: 17)),
+              const SizedBox(height: 8),
+              Text(
+                'Are you sure you want to sign out of your account?',
+                textAlign: TextAlign.center,
+                style: CustomTextStyle.bodyMedium.copyWith(fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: CustomTheme.backgroundColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Cancel',
+                            style: CustomTextStyle.bodyMedium.copyWith(
+                              color: CustomTheme.textSecondary,
+                              fontWeight: CustomTheme.fontWeightMedium,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await ref.read(authProviderNotifier).logout();
+                        if (context.mounted) {
+                          Navigator.pushReplacementNamed(
+                              context, AppRoutes.login);
+                        }
+                      },
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: CustomTheme.errorColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Logout',
+                            style: CustomTextStyle.button
+                                .copyWith(fontSize: 14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref.read(authProviderNotifier).logout();
-              if (context.mounted) {
-                Navigator.pushReplacementNamed(context, AppRoutes.login);
-              }
-            },
-            child: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+class _MenuItemData {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  const _MenuItemData({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.iconColor,
+    required this.onTap,
+  });
 }

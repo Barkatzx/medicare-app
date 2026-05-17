@@ -11,7 +11,7 @@ class HomeAppBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   ConsumerState<HomeAppBar> createState() => _HomeAppBarState();
 
   @override
-  Size get preferredSize => const Size.fromHeight(70);
+  Size get preferredSize => const Size.fromHeight(72);
 }
 
 class _HomeAppBarState extends ConsumerState<HomeAppBar> {
@@ -31,12 +31,26 @@ class _HomeAppBarState extends ConsumerState<HomeAppBar> {
     return 'Good Evening';
   }
 
+  IconData _getGreetingIcon() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return Icons.wb_sunny_rounded;
+    if (hour < 17) return Icons.wb_cloudy_rounded;
+    return Icons.nightlight_round;
+  }
+
+  Color _getGreetingIconColor() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return const Color(0xFFFBBF24);
+    if (hour < 17) return const Color(0xFF60A5FA);
+    return const Color(0xFF818CF8);
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProviderNotifier).currentUser;
     final unreadCount = ref.watch(notificationProviderNotifier).unreadCount;
     final addresses = ref.watch(addressProviderNotifier).addresses;
-    
+
     AddressEntity? defaultAddress;
     try {
       defaultAddress = addresses.firstWhere((a) => a.isDefault);
@@ -44,199 +58,225 @@ class _HomeAppBarState extends ConsumerState<HomeAppBar> {
       if (addresses.isNotEmpty) defaultAddress = addresses.first;
     }
 
+    final initial = user?.name.isNotEmpty == true
+        ? user!.name[0].toUpperCase()
+        : 'G';
+    final displayName = user?.name ?? 'Guest User';
+    final locationText = defaultAddress != null
+        ? '${defaultAddress.city}, ${defaultAddress.state}'
+        : 'Add location';
+    final hasLocation = defaultAddress != null;
+
     return AppBar(
       elevation: 0,
-      toolbarHeight: 70,
+      toolbarHeight: 72,
       backgroundColor: CustomTheme.backgroundColor,
       automaticallyImplyLeading: false,
+      titleSpacing: 0,
       title: Padding(
-        padding: const EdgeInsets.only(top: 8.0),
+        padding: const EdgeInsets.fromLTRB(20, 8, 16, 0),
         child: Row(
           children: [
-            // Premium Avatar with Gradient Border
+            // ── Avatar ───────────────────────────────────────────────
             GestureDetector(
               onTap: () => Navigator.pushNamed(context, '/profile'),
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      CustomTheme.primaryColor,
-                      CustomTheme.primaryColor.withOpacity(0.4),
-                    ],
-                  ),
-                ),
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      user?.name.isNotEmpty == true
-                          ? user!.name[0].toUpperCase()
-                          : 'G',
-                      style: CustomTextStyle.heading3.copyWith(
-                        fontSize: 18,
-                        color: CustomTheme.primaryColor,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: CustomTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(CustomTheme.radiusMD),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initial,
+                        style: CustomTextStyle.heading3.copyWith(
+                          fontSize: 18,
+                          color: Colors.white,
+                          height: 1,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  // Online dot
+                  Positioned(
+                    bottom: -1,
+                    right: -1,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: CustomTheme.successColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: CustomTheme.backgroundColor,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+
             const SizedBox(width: 12),
-            // User Info & Location
+
+            // ── Greeting + Name + Location ────────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Greeting row
                   Row(
                     children: [
-                      Text(
-                        _getGreeting(),
-                        style: CustomTextStyle.bodySmall.copyWith(
-                          color: CustomTheme.textSecondary,
-                          fontWeight: CustomTheme.fontWeightMedium,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
                       Icon(
                         _getGreetingIcon(),
-                        size: 14,
-                        color: Colors.orangeAccent,
+                        size: 13,
+                        color: _getGreetingIconColor(),
                       ),
-                    ],
-                  ),
-                  Text(
-                    user?.name ?? 'Guest User',
-                    style: CustomTextStyle.heading4.copyWith(
-                      fontSize: 16,
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        size: 12,
-                        color: CustomTheme.primaryColor.withOpacity(0.7),
-                      ),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          defaultAddress != null 
-                              ? '${defaultAddress.city}, ${defaultAddress.state}'
-                              : 'Add Location',
-                          style: CustomTextStyle.caption.copyWith(
-                            color: CustomTheme.textTertiary,
-                            fontSize: 11,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 4),
+                      Text(
+                        _getGreeting(),
+                        style: CustomTextStyle.caption.copyWith(
+                          color: CustomTheme.textTertiary,
+                          fontWeight: CustomTheme.fontWeightMedium,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 1),
+                  // Name
+                  Text(
+                    displayName,
+                    style: CustomTextStyle.heading4.copyWith(
+                      fontSize: 15,
+                      height: 1.2,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  // Location chip
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/addresses'),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          hasLocation
+                              ? Icons.location_on_rounded
+                              : Icons.add_location_alt_outlined,
+                          size: 11,
+                          color: hasLocation
+                              ? CustomTheme.primaryColor
+                              : CustomTheme.textTertiary,
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            locationText,
+                            style: CustomTextStyle.caption.copyWith(
+                              color: hasLocation
+                                  ? CustomTheme.textSecondary
+                                  : CustomTheme.textTertiary,
+                              fontWeight: hasLocation
+                                  ? CustomTheme.fontWeightMedium
+                                  : CustomTheme.fontWeightRegular,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (!hasLocation) ...[
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 11,
+                            color: CustomTheme.textTertiary,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ],
               ),
+            ),
+
+            // ── Action Buttons ────────────────────────────────────────
+            _ActionButton(
+              icon: Icons.search_rounded,
+              onTap: () => Navigator.pushNamed(context, '/search'),
+            ),
+            const SizedBox(width: 8),
+            _ActionButton(
+              icon: Icons.notifications_rounded,
+              badgeCount: unreadCount,
+              onTap: () => Navigator.pushNamed(context, '/notifications'),
             ),
           ],
         ),
       ),
-      actions: [
-        _buildActionButton(
-          icon: Icons.search_rounded,
-          onTap: () => Navigator.pushNamed(context, '/search'),
-        ),
-        _buildActionButton(
-          icon: Icons.notifications_none_rounded,
-          badgeCount: unreadCount,
-          onTap: () => Navigator.pushNamed(context, '/notifications'),
-        ),
-        const SizedBox(width: 8),
-      ],
     );
   }
+}
 
-  IconData _getGreetingIcon() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return Icons.wb_sunny_outlined;
-    if (hour < 17) return Icons.wb_cloudy_outlined;
-    return Icons.nightlight_round_outlined;
-  }
+// ── Action Button ─────────────────────────────────────────────────────────────
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    int badgeCount = 0,
-  }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(right: 12.0),
-        child: Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(color: CustomTheme.borderLight.withOpacity(0.5)),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              customBorder: const CircleBorder(),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    color: CustomTheme.textPrimary,
-                    size: 22,
-                  ),
-                  if (badgeCount > 0)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: CustomTheme.errorColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          badgeCount > 9 ? '9+' : badgeCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  const _ActionButton({
+    required this.icon,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(CustomTheme.radiusMD),
+          border: Border.all(color: CustomTheme.borderLight, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 20, color: CustomTheme.textPrimary),
+            if (badgeCount > 0)
+              Positioned(
+                top: 7,
+                right: 7,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: CustomTheme.errorColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
