@@ -22,11 +22,6 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: CustomTheme.backgroundColor,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleSpacing: 20,
-        title: Text(
-          'My Profile',
-          style: CustomTextStyle.heading2.copyWith(fontSize: 20),
-        ),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -115,7 +110,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: CustomTheme.surfaceColor,
         borderRadius: BorderRadius.circular(20),
@@ -124,8 +119,8 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           // Avatar
           Container(
-            width: 68,
-            height: 68,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: CustomTheme.primaryColor.withOpacity(0.07),
@@ -161,42 +156,17 @@ class ProfileScreen extends ConsumerWidget {
                     letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 3),
-                if (user?.phoneNumber != null)
-                  _buildInfoChip(
-                      Icons.phone_outlined, user!.phoneNumber),
-                if (user?.email != null) ...[
-                  const SizedBox(height: 3),
-                  _buildInfoChip(Icons.email_outlined, user!.email),
-                ],
                 if (user?.pharmacyName != null &&
                     (user!.pharmacyName as String).isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: CustomTheme.primaryColor.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.local_pharmacy_outlined,
-                            size: 11, color: CustomTheme.primaryColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          user!.pharmacyName!,
-                          style: TextStyle(
-                            fontFamily: CustomTheme.primaryFontFamily,
-                            fontSize: 11,
-                            fontWeight: CustomTheme.fontWeightSemiBold,
-                            color: CustomTheme.primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 4),
+                  _buildInfoChip(
+                      Icons.local_pharmacy_outlined, user.pharmacyName!),
+                ],
+                if (user?.phoneNumber != null &&
+                    (user!.phoneNumber as String).isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  _buildInfoChip(
+                      Icons.phone_outlined, user.phoneNumber),
                 ],
               ],
             ),
